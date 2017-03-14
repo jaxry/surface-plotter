@@ -1,0 +1,14 @@
+{
+  "name": "surface-plotter",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node_modules/.bin/rollup -c rollup.config.js"
+  },
+  "author": "",
+  "license": "AGPL-3.0",
+  "devDependencies": {
+    "gl-matrix": "^2.3.2",
+    "rollup": "^0.41.5"
+  }
+}

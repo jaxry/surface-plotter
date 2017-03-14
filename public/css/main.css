@@ -1,0 +1,79 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+textarea:invalid {
+  background: #faa;
+}
+
+.plotContainer {
+  display: flex;
+  height: 100%;
+  /*flex-direction: column;*/
+}
+
+#plot {
+  flex: 1 0 0;
+  outline: none;
+}
+
+#plotControls {
+  flex: 0 0 285px;
+  overflow: auto;
+  color: #fff;
+  background: #333;
+  padding: 5px;
+  /*width: 600px;*/
+}
+
+#plotControls h1 {
+  font-size: 1.5em;
+  text-align: center;
+  color: #eef;
+}
+
+#plotControls h2 {
+  font-size: 1em;
+  text-align: center;
+}
+
+.equationInput {
+  display: flex;
+  margin: 15px 0;
+}
+
+.equationInput var {
+  flex: 0 0 auto;
+}
+
+.equationInput textarea {
+  flex: 1 0 150px;
+  margin-left: 5px;
+  resize: vertical;
+  height: 1.6em;
+  font-family: monospace;
+  font-size: 0.85em;
+}
+
+.inputGroup:not(:last-child) {
+  margin-bottom: 40px;
+}
+
+.inputRow {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.inputRow input {
+  margin-left: 10px;
+}
+
+.inputRow label:not(:last-child) {
+  margin-right: 20px;
+}
+
+.numberInput input {
+  width: 60px;
+}
