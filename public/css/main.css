@@ -20,12 +20,12 @@ textarea:invalid {
 }
 
 #plotControls {
-  flex: 0 0 285px;
+  flex: 0 0 300px;
   overflow: auto;
   color: #fff;
   background: #333;
   padding: 5px;
-  /*width: 600px;*/
+  /*width: 275px;*/
 }
 
 #plotControls h1 {
@@ -57,21 +57,30 @@ textarea:invalid {
   font-size: 0.85em;
 }
 
-.inputGroup:not(:last-child) {
-  margin-bottom: 40px;
+.inputGroup:not(:first-of-type) {
+  margin-top: 40px;
 }
 
 .inputRow {
-  margin: 10px 0;
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.inputRow > * {
+  margin: 5px 10px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+.inputRow > :first-child {
+  margin-left: 0px;
+}
+.inputRow > :last-child {
+  margin-right: 0px;
 }
 
 .inputRow input {
   margin-left: 10px;
-}
-
-.inputRow label:not(:last-child) {
-  margin-right: 20px;
 }
 
 .numberInput input {
