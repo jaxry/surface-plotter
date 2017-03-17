@@ -28,44 +28,36 @@ export default class {
 
     const inputGroup = () => createElem('div', {class: 'inputGroup'});
     const inputRow = () => createElem('div', {class: 'inputRow'});
- 
-    this.domElement = buildDomTree({
-      parent: createElem('div', {class: 'parametricControls'}),
-      children: [
+
+    this.domElement = buildDomTree(
+      createElem('div', {class: 'parametricControls'}), [
         createElem('h1', null, 'Parametric Surface Plotter'),
-        {
-          parent: inputGroup(),
-          children: [
-            createElem('h2', null, 'Equation'),
-            this.fx.domElement, this.fy.domElement, this.fz.domElement,
+        inputGroup(), [
+          createElem('h2', null, 'Equation'),
+          this.fx.domElement,
+          this.fy.domElement,
+          this.fz.domElement,
+        ],
+        inputGroup(), [
+          createElem('h2', null, 'Domain'),
+          inputRow(), [
+            this.uStart.domElement,
+            this.uEnd.domElement
+          ],
+          inputRow(), [
+            this.vStart.domElement,
+            this.vEnd.domElement
           ]
-        },
-        {
-          parent: inputGroup(),
-          children: [
-            createElem('h2', null, 'Domain'),
-            { 
-              parent: inputRow(),
-              children: [this.uStart.domElement, this.uEnd.domElement]
-            },
-            { 
-              parent: inputRow(),
-              children: [this.vStart.domElement, this.vEnd.domElement]
-            }
+        ],
+        inputGroup(), [
+          createElem('h2', null, 'Mesh Detail'),
+          inputRow(), [
+            this.rows.domElement,
+            this.columns.domElement
           ]
-        },
-        {
-          parent: inputGroup(),
-          children: [
-            createElem('h2', null, 'Mesh Detail'),
-            { 
-              parent: inputRow(),
-              children: [this.rows.domElement, this.columns.domElement]
-            }
-          ]
-        }
+        ]
       ]
-    });
+    );
   }
 
   defaultValues() {

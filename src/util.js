@@ -40,13 +40,16 @@ export function createElem(name, attribs, html) {
   return elem;
 }
 
-export function buildDomTree(tree) {
-  const parent = tree.parent;
-  for (let child of tree.children) {
-    parent.appendChild(
-      (child instanceof Node) ? child : buildDomTree(child)
-    );
+export function buildDomTree(parent, children) {
+  for (let [i, child] of children.entries()) {
+    if (child instanceof Array) {
+      buildDomTree(children[i-1], child);
+    }
+    else {
+      parent.appendChild(child);
+    }
   }
+
   return parent;
 }
 

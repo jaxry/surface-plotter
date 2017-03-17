@@ -5,13 +5,12 @@ export default class {
     this.input = createElem('input', {type: 'number', step});
     this.input.addEventListener('input', onInput);
 
-    this.domElement = buildDomTree({
-      parent: createElem('label', {class: 'numberInput' }),
-      children: [
+    this.domElement = buildDomTree(
+      createElem('label', {class: 'numberInput' }), [
         createElem('span', null, name),
         this.input
       ]
-    });
+    );
   }
 
   set value(x) {
