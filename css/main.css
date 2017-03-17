@@ -69,8 +69,6 @@ textarea:invalid {
 
 .inputRow > * {
   margin: 5px 10px;
-  white-space: nowrap;
-  box-sizing: border-box;
 }
 .inputRow > :first-child {
   margin-left: 0px;
