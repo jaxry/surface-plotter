@@ -7,7 +7,7 @@ export default function(positions, elements) {
     const e2 = 3 * elements[i+1];
     const e3 = 3 * elements[i+2];
 
-    // With positions P1, P2, and P3, get direction vectors V = P2 - P1, W = P3 - P1;
+    // With positions P1, P2, and P3, get direction vectors V = P2 - P1, W = P3 - P1
     const vx = positions[e2 + 0] - positions[e1 + 0];
     const vy = positions[e2 + 1] - positions[e1 + 1];
     const vz = positions[e2 + 2] - positions[e1 + 2];
@@ -20,8 +20,8 @@ export default function(positions, elements) {
     const ny = vz * wx - vx * wz;
     const nz = vx * wy - vy * wx;
 
-    // Add this normal to each of the triangle's vertices.
-    // This process averages the normals of each triangle around each vertex.
+    // Add this normal to each of the triangle's vertices
+    // This process averages the normals of each triangle around each vertex
     normals[e1 + 0] += nx; normals[e1 + 1] += ny; normals[e1 + 2] += nz;
     normals[e2 + 0] += nx; normals[e2 + 1] += ny; normals[e2 + 2] += nz;
     normals[e3 + 0] += nx; normals[e3 + 1] += ny; normals[e3 + 2] += nz;

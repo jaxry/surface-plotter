@@ -18,8 +18,8 @@ export default function({rows, columns, orderFlip}) {
 
   for (let i = 0; i <= squareRows; i++) {
     for (let j = 0; j <= squareColumns; j++) {
-      const i0 = i % rows, i1 = (i + 1) % rows;
-      const j0 = j % columns, j1 = (j + 1) % columns;
+      const i0 = i, i1 = i + 1;
+      const j0 = j, j1 = j + 1;
       
       const topLeft = columns * i0 + j0;
       const topRight = columns * i0 + j1;
