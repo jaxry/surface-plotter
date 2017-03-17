@@ -5,13 +5,12 @@ export default class {
     this.input = createElem('input', {type: 'checkbox'});
     this.input.addEventListener('click', onInput);
 
-    this.domElement = buildDomTree({
-      parent: createElem('label', {class: 'checkboxInput' }),
-      children: [
+    this.domElement = buildDomTree(
+      createElem('label', {class: 'checkboxInput'}), [
         createElem('span', null, name),
         this.input
       ]
-    });
+    );
   }
 
   set value(x) {

@@ -9,15 +9,13 @@ export default class {
       onInput(this.equation);
     });
 
-    this.domElement = buildDomTree({
-      parent: createElem('label', {
-        class: 'equationInput',
-      }),
-      children: [
+
+    this.domElement = buildDomTree(
+      createElem('label', {class: 'equationInput',}), [
         createElem('var', null, name),
         this.textarea
       ]
-    });
+    );
   }
 
   set value(value) {
