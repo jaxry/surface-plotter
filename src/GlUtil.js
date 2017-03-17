@@ -35,8 +35,8 @@ export default class {
     const locs = {};
     const activeUniforms = this.gl.getProgramParameter(program, this.gl.ACTIVE_UNIFORMS);
     for (let i = 0; i < activeUniforms; i++) {
-      const name = this.gl.getActiveUniform(program, i).name;
-      locs[name] = this.gl.getUniformLocation(program, name);
+      const uniform = this.gl.getActiveUniform(program, i);
+      locs[uniform.name] = this.gl.getUniformLocation(program, uniform.name);
     }
 
     return locs;

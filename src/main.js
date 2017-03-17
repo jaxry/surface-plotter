@@ -1,7 +1,10 @@
 import {vec3, mat4} from 'gl-matrix';
+
 import GlUtil from './GlUtil';
+import Geometry from './Geometry';
 import FpsControls from './FpsControls';
-import ParametricSurface from './ParametricSurface';
+import parametricSurface from './parametricSurface';
+import Timer from './Timer';
 
 import ParametricControls from './components/ParametricControls';
 
@@ -19,49 +22,60 @@ const gl = canvas.getContext('webgl2', {
 const glUtil = new GlUtil(gl);
 
 const fpsControls = new FpsControls(canvas);
-const parametricSurface = new ParametricSurface(gl);
+const geometry = new Geometry(gl);
 
 const vs = glUtil.makeVertexShader(vert3d);
 const fs = glUtil.makeFragmentShader(frag3d);
 const program = glUtil.makeProgram(vs, fs);
 gl.linkProgram(program);
+gl.useProgram(program);
 
 const uniforms = glUtil.getUniformLocations(program);
 
-gl.useProgram(program);
-
-const viewProjection = mat4.create();
+const mvp = mat4.create();
 const proj = mat4.create();
 const model = mat4.create();
 
-let lastTime = Date.now();
-const startTime = Date.now();
+const timer = new Timer();
 
 function render() {
-  const now = Date.now();
-  const dt = now - lastTime;
-  const elapsed = now - startTime;
-
-  lastTime = now;
-
-  fpsControls.update(dt);
+  timer.update();
+  fpsControls.update(timer.dt);
 
   const view = fpsControls.camera.getView();
 
-  mat4.mul(viewProjection, proj, view);
-  // mat4.mul(mvp, mvp, model);
+  mat4.mul(mvp, proj, view);
+  mat4.mul(mvp, mvp, model);
 
   gl.uniform3fv(uniforms.uCamPos, fpsControls.camera.position);
   gl.uniform3fv(uniforms.uLightPos, fpsControls.camera.position);
   gl.uniformMatrix4fv(uniforms.uModel, false, model);
-  gl.uniformMatrix4fv(uniforms.uViewProjection, false, viewProjection);
+  gl.uniformMatrix4fv(uniforms.uMVP, false, mvp);
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  parametricSurface.render(elapsed);
+  geometry.render();
 
   requestAnimationFrame(render);
 }
+
+function generateMesh(definition) {
+  geometry.update(parametricSurface(definition));
+}
+
+const parametricControls = new ParametricControls();
+
+document.getElementById('plotControls').appendChild(parametricControls.domElement);
+parametricControls.ondefinition = definition => {
+  generateMesh(definition);
+};
+
+fpsControls.center(vec3.fromValues(0, 0, 0));
+mat4.fromScaling(model, [0.25, 0.25, 0.25]);
+generateMesh(parametricControls.getDefinition());
+
+gl.enable(gl.DEPTH_TEST);
+gl.clearColor(0.1, 0.1, 0.1, 1);
 
 function resize() {
   canvas.width = 0;
@@ -71,22 +85,7 @@ function resize() {
   gl.viewport(0, 0, canvas.width, canvas.height);
   mat4.perspective(proj, 60 * Math.PI / 180, canvas.width / canvas.height, 0.1, 500);
 }
-
-const parametricControls = new ParametricControls();
-
-parametricControls.ondefinition = definition => {
-  parametricSurface.generate(definition);
-};
-
-gl.enable(gl.DEPTH_TEST);
-gl.clearColor(0.1, 0.1, 0.1, 1);
-
-fpsControls.center(vec3.fromValues(0, 0, 0));
-mat4.fromScaling(model, [0.25, 0.25, 0.25]);
-
-parametricSurface.generate(parametricControls.getDefinition());
-document.getElementById('plotControls').appendChild(parametricControls.domElement);
 window.addEventListener('resize', resize);
-
 resize();
+
 render();

@@ -1,16 +1,16 @@
-export default function(vertexRows, vertexColumns, rowsClosed, columnsClosed, orderFlip) {
+export default function({rows, columns, orderFlip}) {
 
-  const squareRows = rowsClosed ? vertexRows : vertexRows - 1;
-  const squareColumns = columnsClosed ? vertexColumns : vertexColumns - 1;
+  const squareRows = rows - 1;
+  const squareColumns = columns - 1;
 
-  const uv = new Float32Array(2 * vertexRows * vertexColumns);
+  const uv = new Float32Array(2 * rows * columns);
   const elements = new Uint32Array(6 * squareRows * squareColumns);
 
-  for (let i = 0; i < vertexRows; i++) {
-    for (let j = 0; j < vertexColumns; j++) {
-      let u = j / squareColumns;
-      let v = i / squareRows;
-      const start = 2 * (vertexColumns * i + j);
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < columns; j++) {
+      let u = j / squareRows;
+      let v = i / squareColumns;
+      const start = 2 * (columns * i + j);
       uv[start + 0] = u;
       uv[start + 1] = v;
     }
@@ -18,17 +18,18 @@ export default function(vertexRows, vertexColumns, rowsClosed, columnsClosed, or
 
   for (let i = 0; i <= squareRows; i++) {
     for (let j = 0; j <= squareColumns; j++) {
-      const i0 = i % vertexRows, i1 = (i + 1) % vertexRows;
-      const j0 = j % vertexColumns, j1 = (j + 1) % vertexColumns;
+      const i0 = i % rows, i1 = (i + 1) % rows;
+      const j0 = j % columns, j1 = (j + 1) % columns;
       
-      const topLeft = vertexColumns * i0 + j0;
-      const topRight = vertexColumns * i0 + j1;
-      const bottomLeft = vertexColumns * i1 + j0;
-      const bottomRight = vertexColumns * i1 + j1;
+      const topLeft = columns * i0 + j0;
+      const topRight = columns * i0 + j1;
+      const bottomLeft = columns * i1 + j0;
+      const bottomRight = columns * i1 + j1;
 
       const start = orderFlip ? 
         6 * (i + squareRows * j) : 
         6 * (squareColumns * i + j);
+        
       if (i % 2 === j % 2) {
         elements[start] = bottomLeft;
         elements[start + 1] = bottomRight;
