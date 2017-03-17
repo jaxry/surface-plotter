@@ -1,5 +1,4 @@
 export default function({rows, columns, orderFlip}) {
-
   const squareRows = rows - 1;
   const squareColumns = columns - 1;
 
@@ -8,8 +7,8 @@ export default function({rows, columns, orderFlip}) {
 
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < columns; j++) {
-      let u = j / squareRows;
-      let v = i / squareColumns;
+      let u = j / squareColumns;
+      let v = i / squareRows;
       const start = 2 * (columns * i + j);
       uv[start + 0] = u;
       uv[start + 1] = v;
