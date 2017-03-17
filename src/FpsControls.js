@@ -7,7 +7,7 @@ export default class {
     this.canvas = canvas;
     this.camera = new Camera();
     this.mouseSensitivity = 0.001;
-    this.moveSensitivity = 0.0007;
+    this.moveSensitivity = 0.0008;
 
     this.useArcball = true;
     this.scalePower = 0;

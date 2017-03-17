@@ -1,16 +1,15 @@
-import { createElem, buildDomTree, throttle } from '../util';
+import { createElem, buildDomTree, debounce } from '../util';
 import EquationInput from './EquationInput';
 import NumberInput from './NumberInput';
-import CheckboxInput from './CheckboxInput';
 
 export default class {
   constructor() {
-    const update = throttle(() => {
+    const update = debounce(() => {
       if (this.ondefinition) {
         const definition = this.getDefinition();
         this.ondefinition(definition);
       }
-    }, 300);
+    }, 500);
 
     this.fx = new EquationInput('x(u, v)', update);
     this.fy = new EquationInput('y(u, v)', update);
@@ -21,9 +20,6 @@ export default class {
 
     this.vStart = new NumberInput('<var>v</var> Start', update, 0.1);
     this.vEnd = new NumberInput('<var>v</var> End', update, 0.1);
-
-    this.uClosed = new CheckboxInput('Close <var>u</var>', update);
-    this.vClosed = new CheckboxInput('Close <var>v</var>', update);
 
     this.rows = new NumberInput('Rows', update, 1);
     this.columns = new NumberInput('Columns', update, 1);
@@ -55,10 +51,6 @@ export default class {
             { 
               parent: inputRow(),
               children: [this.vStart.domElement, this.vEnd.domElement]
-            },
-            {
-              parent: inputRow(),
-              children: [this.uClosed.domElement, this.vClosed.domElement]
             }
           ]
         },
@@ -77,37 +69,41 @@ export default class {
   }
 
   defaultValues() {
+    // torus
     this.fx.value = '(1 + 0.5 * cos(v)) * cos(u)';
     this.fy.value = '(1 + 0.5 * cos(v)) * sin(u)';
     this.fz.value = '0.5 * sin(v)';
-    this.uStart.value = 0; this.uEnd.value = 6.283;
-    this.vStart.value = 0; this.vEnd.value = 6.283;
-    this.uClosed.value = true; this.vClosed.value = true;
+    this.uStart.value = 0; this.uEnd.value = 6.2832;
+    this.vStart.value = 0; this.vEnd.value = 6.2832;
+
+    // klein bottle
+    // this.fx.value = '(2 + cos(u/2) * sin(v) - sin(u/2) * sin(2*v)) * cos(u)';
+    // this.fy.value = 'sin(u/2) * sin(v) + cos(u/2) * sin(2*v)';
+    // this.fz.value = '(2 + cos(u/2) * sin(v) - sin(u/2) * sin(2*v)) * sin(u)';
+    // this.uStart.value = 0; this.uEnd.value = 6.283;
+    // this.vStart.value = 0; this.vEnd.value = 6.283;
+
+    // steiner surface
+    // this.fx.value = '3 * cos(v) * sin(v) * sin(u)';
+    // this.fy.value = '3 * cos(v) * sin(v) * cos(u)';
+    // this.fz.value = '3 * cos(v) * cos(v) * cos(u) * sin(u)';
+    // this.uStart.value = 0; this.uEnd.value = 6.2832;
+    // this.vStart.value = 0; this.vEnd.value = 1.58;
+
+
     this.rows.value = 96; this.columns.value = 96;
   }
   
   getDefinition() {
     const definition = {
-      u: [this.uStart.value, this.uEnd.value],
-      v: [this.vStart.value, this.vEnd.value],
+      u0: this.uStart.value, u1: this.uEnd.value,
+      v0: this.vStart.value, v1: this.vEnd.value,
       fx: this.fx.equation,
       fy: this.fy.equation,
       fz: this.fz.equation,
-      uClosed: this.uClosed.value,
-      vClosed: this.vClosed.value,
       rows: Math.round(this.rows.value),
       columns: Math.round(this.columns.value)
     };
     return definition;
   }
 }
-
-// const r = 1;
-// const u0 = 0;
-// const u1 = 2 * Math.PI;
-// const v0 = 0;
-// const v1 = 0.5 * Math.PI;
-// const fx = (u, v) => r * r * cos(v) * sin(v) * sin(u);
-// const fy = (u, v) => r * r * cos(v) * sin(v) * cos(u);
-// const fz = (u, v) => r * r * cos(v) * cos(v) * cos(u) * sin(u);
-// const loop = false;
