@@ -5,6 +5,7 @@ import Geometry from './Geometry';
 import FpsControls from './FpsControls';
 import parametricSurface from './parametricSurface';
 import Timer from './Timer';
+import Tween from './Tween';
 
 import ParametricControls from './components/ParametricControls';
 
@@ -37,6 +38,7 @@ const proj = mat4.create();
 const model = mat4.create();
 
 const timer = new Timer();
+const tween = new Tween();
 
 function render() {
   timer.update();
@@ -46,6 +48,8 @@ function render() {
 
   mat4.mul(mvp, proj, view);
   mat4.mul(mvp, mvp, model);
+
+  tween.update();
 
   gl.uniform3fv(uniforms.uCamPos, fpsControls.camera.position);
   gl.uniform3fv(uniforms.uLightPos, fpsControls.camera.position);
@@ -60,7 +64,14 @@ function render() {
 }
 
 function generateMesh(definition) {
-  geometry.update(parametricSurface(definition));
+  const sameBuffer = geometry.update(parametricSurface(definition));
+  let interpolation = tween.create();
+  interpolation.duration = 1250;
+  interpolation.easing = Tween.easing.smootherstep;
+  interpolation.onUpdate = t => {
+    gl.uniform1f(uniforms.uInterpolate, t);
+  }
+  interpolation.start();
 }
 
 const parametricControls = new ParametricControls();

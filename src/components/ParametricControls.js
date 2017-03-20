@@ -93,8 +93,8 @@ export default class {
       fx: this.fx.equation,
       fy: this.fy.equation,
       fz: this.fz.equation,
-      rows: Math.round(this.rows.value),
-      columns: Math.round(this.columns.value)
+      rows: Math.min(512, Math.round(this.rows.value)),
+      columns: Math.min(512, Math.round(this.columns.value))
     };
     return definition;
   }
