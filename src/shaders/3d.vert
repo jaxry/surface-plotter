@@ -11,12 +11,10 @@ export default `#version 300 es
 
   out vec3 vPos;
   out vec3 vNormal;
-  // out vec3 vInterPos;
-  // out vec3 vInterNormal;
 
   void main() {
     vec3 interPos = mix(aPosBack, aPos, uInterpolate);
-    vec3 interNormal = mix(aNormalBack, aNormal, uInterpolate);
+    vec3 interNormal = normalize(mix(aNormalBack, aNormal, uInterpolate));
 
     vPos = (uModel * vec4(interPos, 1)).xyz;
     vNormal = mat3(uModel) * interNormal;
