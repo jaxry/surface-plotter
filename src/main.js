@@ -5,12 +5,15 @@ import Geometry from './Geometry';
 import FpsControls from './FpsControls';
 import parametricSurface from './parametricSurface';
 import Timer from './Timer';
-import Tween from './Tween';
+import Tweens from './Tweens';
 
 import ParametricControls from './components/ParametricControls';
 
 import vert3d from './shaders/3d.vert';
 import frag3d from './shaders/3d.frag';
+
+const tweens = new Tweens();
+const timer = new Timer();
 
 const canvas = document.getElementById('plot');
 const gl = canvas.getContext('webgl2', {
@@ -37,9 +40,6 @@ const mvp = mat4.create();
 const proj = mat4.create();
 const model = mat4.create();
 
-const timer = new Timer();
-const tween = new Tween();
-
 function render() {
   timer.update();
   fpsControls.update(timer.dt);
@@ -49,7 +49,7 @@ function render() {
   mat4.mul(mvp, proj, view);
   mat4.mul(mvp, mvp, model);
 
-  tween.update();
+  tweens.update();
 
   gl.uniform3fv(uniforms.uCamPos, fpsControls.camera.position);
   gl.uniform3fv(uniforms.uLightPos, fpsControls.camera.position);
@@ -63,31 +63,6 @@ function render() {
   requestAnimationFrame(render);
 }
 
-function generateMesh(definition) {
-  const sameBuffer = geometry.update(parametricSurface(definition));
-  let interpolation = tween.create();
-  interpolation.duration = 1250;
-  interpolation.easing = Tween.easing.smootherstep;
-  interpolation.onUpdate = t => {
-    gl.uniform1f(uniforms.uInterpolate, t);
-  }
-  interpolation.start();
-}
-
-const parametricControls = new ParametricControls();
-
-document.getElementById('plotControls').appendChild(parametricControls.domElement);
-parametricControls.ondefinition = definition => {
-  generateMesh(definition);
-};
-
-fpsControls.center(vec3.fromValues(0, 0, 0));
-mat4.fromScaling(model, [0.25, 0.25, 0.25]);
-generateMesh(parametricControls.getDefinition());
-
-gl.enable(gl.DEPTH_TEST);
-gl.clearColor(0.1, 0.1, 0.1, 1);
-
 function resize() {
   canvas.width = 0;
   canvas.height = 0;
@@ -96,7 +71,29 @@ function resize() {
   gl.viewport(0, 0, canvas.width, canvas.height);
   mat4.perspective(proj, 60 * Math.PI / 180, canvas.width / canvas.height, 0.1, 500);
 }
+
+function generateMesh(definition) {
+  geometry.update(parametricSurface(definition));
+
+  const vertexTween = tweens.create()
+    .duration(1400)
+    .easing(Tweens.easing.smootherstep)
+    .onUpdate(t => {
+      gl.uniform1f(uniforms.uInterpolate, t);
+    })
+    .start();
+}
+
+fpsControls.scale = 3;
+fpsControls.center(vec3.fromValues(0, 0, 0));
+
+const parametricControls = new ParametricControls();
+document.getElementById('plotControls').appendChild(parametricControls.domElement);
+parametricControls.ondefinition = generateMesh;
+
+gl.enable(gl.DEPTH_TEST);
+gl.clearColor(0.1, 0.1, 0.1, 1);
+generateMesh(parametricControls.getDefinition());
 window.addEventListener('resize', resize);
 resize();
-
 render();

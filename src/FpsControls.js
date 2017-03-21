@@ -8,10 +8,9 @@ export default class {
     this.camera = new Camera();
     this.mouseSensitivity = 0.001;
     this.moveSensitivity = 0.0008;
+    this.scaleSensitivity = 1.1;
 
     this.useArcball = true;
-    this.scalePower = 0;
-    this.scaleBase = 1.1;
     this.scale = 1;
 
     this._keyBindings = {
@@ -69,8 +68,9 @@ export default class {
     this._changeScale = (e) => {
       e.preventDefault();
       const oldScale = this.scale;
-      this.scalePower += Math.sign(e.deltaY);
-      this.scale = Math.pow(this.scaleBase, this.scalePower);
+
+      this.scale *= Math.pow(this.scaleSensitivity, Math.sign(e.deltaY));
+
       if (this.useArcball) {
         vec3.scaleAndAdd(this.camera.position, this.camera.position, this.camera.getForward(), oldScale - this.scale);
       }
@@ -81,8 +81,6 @@ export default class {
       {element: this.canvas, type: 'keydown', callback: this._addAction},
       {element: window, type: 'keyup', callback: this._removeAction},
       {element: this.canvas, type: 'mousedown', callback: this._pointerlock},
-      // {element: this.canvas, type: 'mousedown', callback: this._toggleArcball},
-      // {element: this.canvas, type: 'mouseup', callback: this._toggleArcball},
       {element: this.canvas, type: 'wheel', callback: this._changeScale}
     ]);
   }

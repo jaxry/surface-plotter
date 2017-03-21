@@ -1,17 +1,28 @@
 import computeNormals from './computeNormals';
 
-function initArrayBuffer(gl, buffer, size, index) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.vertexAttribPointer(index, size, gl.FLOAT, false, 0, 0);
-  gl.enableVertexAttribArray(index);
-}
-
 class Buffer {
-  constructor(gl, type = gl.ARRAY_BUFFER) {
+  constructor(gl, type = gl.ARRAY_BUFFER, usage = gl.DYNAMIC_DRAW) {
     this.gl = gl;
     this.type = type;
+    this.usage = usage;
     this.buffer = gl.createBuffer();
     this.size = 0;
+  }
+
+  resize(size) {
+    const newBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, newBuffer);
+    this.gl.bufferData(this.gl.COPY_WRITE_BUFFER, size, this.usage);
+
+    const copySize = Math.min(this.size, size);
+
+    this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, this.buffer);
+    this.gl.copyBufferSubData(this.gl.COPY_READ_BUFFER, this.gl.COPY_WRITE_BUFFER, 0, 0, copySize);
+
+    this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, null);
+    this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, null);
+
+    this.buffer = newBuffer;
   }
 
   update(data) {
@@ -19,12 +30,10 @@ class Buffer {
 
     if (data.length === this.size) {
       this.gl.bufferSubData(this.type, 0, data);
-      return true;
     }
 
-    this.gl.bufferData(this.type, data, this.gl.DYNAMIC_DRAW);
-    this.size = data.length;
-    return false;
+    this.gl.bufferData(this.type, data, this.usage);
+    this.size = data.byteLength;
   }
 }
 
@@ -43,12 +52,10 @@ class SwappableBuffer {
 
   update(data) {
     this.swap();
-    const sameBuffer = this.front.update(data);
-    if (!sameBuffer) {
+    this.front.update(data);
+    if (this.front.size !== this.back.size) {
       this.back.update(data);
     }
-
-    return sameBuffer;
   }
 }
 
@@ -62,9 +69,14 @@ export default class {
       elements: new Buffer(gl, gl.ELEMENT_ARRAY_BUFFER),
     };
 
-    this.count = 0;
-
+    this._numElements = 0;
     this._vao = gl.createVertexArray();
+  }
+
+  _initArrayBuffer(buffer, size, index) {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+    this.gl.vertexAttribPointer(index, size, this.gl.FLOAT, false, 0, 0);
+    this.gl.enableVertexAttribArray(index);
   }
 
   update({positions, normals, elements}) {
@@ -76,17 +88,18 @@ export default class {
     this.buffers.normals.update(normals);
 
     this.gl.bindVertexArray(this._vao);
-    initArrayBuffer(this.gl, this.buffers.positions.front.buffer, 3, 0);
-    initArrayBuffer(this.gl, this.buffers.normals.front.buffer, 3, 1);
-    initArrayBuffer(this.gl, this.buffers.positions.back.buffer, 3, 2);
-    initArrayBuffer(this.gl, this.buffers.normals.back.buffer, 3, 3);
+    this._initArrayBuffer(this.buffers.positions.front.buffer, 3, 0);
+    this._initArrayBuffer(this.buffers.normals.front.buffer, 3, 1);
+    this._initArrayBuffer(this.buffers.positions.back.buffer, 3, 2);
+    this._initArrayBuffer(this.buffers.normals.back.buffer, 3, 3);
 
     this.buffers.elements.update(elements);
-    this.count = elements.length;
+
+    this._numElements = elements.length;
   }
 
   render() {
     this.gl.bindVertexArray(this._vao);
-    this.gl.drawElements(this.gl.TRIANGLES, this.count, this.gl.UNSIGNED_INT, 0);
+    this.gl.drawElements(this.gl.TRIANGLES, this._numElements, this.gl.UNSIGNED_INT, 0);
   }
 }
