@@ -4,11 +4,15 @@ import Timer from './Timer';
 // based on the tween.js library
 
 class Tween {
-  constructor(factory) {
+  constructor(factory, fromObj) {
     this._factory = factory;
     this._duration = 1000;
-    this._easing = TweenFactory.easing.linear;
+    this._easing = TweenFactory.easing.smootherstep;
     this._chain = [];
+
+    if (fromObj) {
+      this.from(fromObj);
+    }
   }
 
   update() {
@@ -97,8 +101,8 @@ class TweenFactory {
     this.tweens = new Set();
   }
 
-  create() {
-    const t = new Tween(this);
+  create(fromObj) {
+    const t = new Tween(this, fromObj);
     return t;
   }
 

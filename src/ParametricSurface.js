@@ -107,12 +107,24 @@ export default class {
   }
 
   generate(definition) {
+    let animatable;
+
     if (this.lastDefinition.rows !== definition.rows || this.lastDefinition.columns !== definition.columns) {
       this._newGeometry(definition.rows, definition.columns);
+      animatable = false;
+    }
+    else {
+      this.geometry.morphAttributes.position = [
+        this.geometry.getAttribute('position').clone()
+      ];
+
+      animatable = true;
     }
 
     this._computeSurface(definition);
 
     this.lastDefinition = definition;
+
+    return animatable;
   }
 }

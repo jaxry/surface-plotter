@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import Tweens from './Tweens';
 import ParametricSurface from './ParametricSurface';
 import OrbitControls from './OrbitControls';
 import ParametricControls from './components/ParametricControls';
@@ -15,6 +16,7 @@ renderer.setFaceCulling(THREE.CullFaceNone);
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+const tweens = new Tweens();
 
 const texture = new THREE.TextureLoader().load('images/UV_Grid_Sm.jpg');
 texture.anisotropy = renderer.getMaxAnisotropy();
@@ -24,6 +26,7 @@ texture.wrapT = THREE.RepeatWrapping;
 const material = new THREE.MeshBasicMaterial({
   // wireframe: true,
   map: texture,
+  morphTargets: true,
   side: THREE.DoubleSide
 });
 
@@ -37,8 +40,9 @@ const orbitControls = new OrbitControls(camera, canvas);
 const parametricSurface = new ParametricSurface();
 
 function render() {
-  renderer.render(scene, camera);
   orbitControls.update();
+  tweens.update();
+  renderer.render(scene, camera);
   requestAnimationFrame(render);
 }
 
@@ -51,7 +55,13 @@ function resize() {
 }
 
 function setGeometry(definition) {
-  parametricSurface.generate(definition);
+  const animatable = parametricSurface.generate(definition);
+  if (animatable) {
+    mesh.morphTargetInfluences = [1];
+    tweens.create(mesh.morphTargetInfluences)
+      .to({0: 0})
+      .start();
+  }
   mesh.geometry = parametricSurface.geometry;
 }
 
