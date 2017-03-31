@@ -55,13 +55,20 @@ function resize() {
 }
 
 function setGeometry(definition) {
-  const animatable = parametricSurface.generate(definition);
+  const {animatable, center} = parametricSurface.generate(definition);
   if (animatable) {
     mesh.morphTargetInfluences = [1];
     tweens.create(mesh.morphTargetInfluences)
       .to({0: 0})
       .start();
   }
+  tweens.create(orbitControls.center)
+    .to(center)
+    .onUpdate(() => {
+      orbitControls.matrixNeedsUpdate = true;
+    })
+    .start();
+
   mesh.geometry = parametricSurface.geometry;
 }
 

@@ -56,6 +56,7 @@ export default class {
     const normals =  this.geometry.getAttribute('normal');
     const uvs = this.geometry.getAttribute('uv');
 
+    const center = new THREE.Vector3();
     const tempv = new THREE.Vector3();
     const f = new THREE.Vector3();
     const ru = new THREE.Vector3();
@@ -73,6 +74,8 @@ export default class {
         const v = v0 + vd * (v1 - v0);
 
         f.set(fx(u, v), fy(u, v), fz(u, v));
+
+        center.add(f);
 
         let offset = u - eps;
         if (offset >= u0) {
@@ -104,6 +107,10 @@ export default class {
     positions.needsUpdate = true;
     normals.needsUpdate = true;
     uvs.needsUpdate = true;
+
+    center.divideScalar(rows * columns);
+
+    return center;
   }
 
   generate(definition) {
@@ -121,10 +128,13 @@ export default class {
       animatable = true;
     }
 
-    this._computeSurface(definition);
+    const center = this._computeSurface(definition);
 
     this.lastDefinition = definition;
 
-    return animatable;
+    return {
+      center,
+      animatable
+    };
   }
 }
