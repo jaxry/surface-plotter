@@ -58,43 +58,53 @@ export function clamp(x, min, max) {
 }
 
 export function debounce(fn, wait, immediate) {
-  let timeout;
-  return function() {
-    if (immediate && !timeout) {
-      fn.apply(this, arguments);
-      timeout = setTimeout(() => {
-        timeout = null;
-      }, wait);
+  let timeoutID;
+  let lastArguments;
+
+  function timeout() {
+    if (lastArguments) {
+      fn.apply(this, lastArguments);
+      lastArguments = null;
+      timeoutID = setTimeout(timeout, wait);
     }
     else {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        fn.apply(this, arguments);
-        timeout = null;
-      }, wait);
+      timeoutID = null;
+    }
+  }
+  return function() {
+    lastArguments = arguments;
+    if (immediate && !timeoutID) {
+      timeout();
+    }
+    else {
+      clearTimeout(timeoutID);
+      timeoutID = setTimeout(timeout, wait);
     }
   };
 }
 
 export function throttle(fn, wait) {
-  let timeout;
-  let next;
+  let timeoutID;
+  let lastArguments;
+
+  function timeout() {
+    if (lastArguments) {
+      fn.apply(this, lastArguments);
+      lastArguments = null;
+      timeoutID = setTimeout(timeout, wait);
+    }
+    else {
+      timeoutID = null;
+    }
+  }
 
   return function() {
-
-    next = () => {
-      fn.apply(this, arguments);
-      next = null;
-      timeout = setTimeout(() => {
-        timeout = null;
-        if (next) {
-          next();
-        }
-      }, wait);
-    };
-    
-    if (!timeout) {
-      next();
+    lastArguments = arguments;
+    if (!timeoutID) {
+      timeout();
+    }
+    else {
+      lastArguments = arguments;
     }
   };
 }

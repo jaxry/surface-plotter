@@ -1,99 +1,65 @@
-import {vec3, mat4} from 'gl-matrix';
-
-import GlUtil from './GlUtil';
-import Geometry from './Geometry';
-import FpsControls from './FpsControls';
-import parametricSurface from './parametricSurface';
-import Timer from './Timer';
-import Tweens from './Tweens';
-
+import * as THREE from 'three';
+import ParametricSurface from './ParametricSurface';
+import OrbitControls from './OrbitControls';
 import ParametricControls from './components/ParametricControls';
 
-import vert3d from './shaders/3d.vert';
-import frag3d from './shaders/3d.frag';
-
-const tweens = new Tweens();
-const timer = new Timer();
+THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
 const canvas = document.getElementById('plot');
-const gl = canvas.getContext('webgl2', {
-  alpha: false,
-  antialias: true,
-  depth: true,
-  stencil: true,
+
+var renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true
+});
+renderer.setFaceCulling(THREE.CullFaceNone);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+const texture = new THREE.TextureLoader().load('images/UV_Grid_Sm.jpg');
+texture.anisotropy = renderer.getMaxAnisotropy();
+texture.wrapS = THREE.RepeatWrapping;
+texture.wrapT = THREE.RepeatWrapping;
+
+const material = new THREE.MeshBasicMaterial({
+  // wireframe: true,
+  map: texture,
+  side: THREE.DoubleSide
 });
 
-const glUtil = new GlUtil(gl);
+const mesh = new THREE.Mesh();
+mesh.material = material;
+mesh.frustrumCulled = false;
 
-const fpsControls = new FpsControls(canvas);
-const geometry = new Geometry(gl);
+scene.add(mesh);
 
-const vs = glUtil.makeVertexShader(vert3d);
-const fs = glUtil.makeFragmentShader(frag3d);
-const program = glUtil.makeProgram(vs, fs);
-gl.linkProgram(program);
-gl.useProgram(program);
-
-const uniforms = glUtil.getUniformLocations(program);
-
-const mvp = mat4.create();
-const proj = mat4.create();
-const model = mat4.create();
+const orbitControls = new OrbitControls(camera, canvas);
+const parametricSurface = new ParametricSurface();
 
 function render() {
-  timer.update();
-  fpsControls.update(timer.dt);
-
-  const view = fpsControls.camera.getView();
-
-  mat4.mul(mvp, proj, view);
-  mat4.mul(mvp, mvp, model);
-
-  tweens.update();
-
-  gl.uniform3fv(uniforms.uCamPos, fpsControls.camera.position);
-  gl.uniform3fv(uniforms.uLightPos, fpsControls.camera.position);
-  gl.uniformMatrix4fv(uniforms.uModel, false, model);
-  gl.uniformMatrix4fv(uniforms.uMVP, false, mvp);
-
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
-  geometry.render();
-
+  renderer.render(scene, camera);
+  orbitControls.update();
   requestAnimationFrame(render);
 }
 
 function resize() {
-  canvas.width = 0;
-  canvas.height = 0;
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-  gl.viewport(0, 0, canvas.width, canvas.height);
-  mat4.perspective(proj, 60 * Math.PI / 180, canvas.width / canvas.height, 0.1, 500);
+  const width = canvas.offsetWidth;
+  const height = canvas.offsetHeight;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
 }
 
-function generateMesh(definition) {
-  geometry.update(parametricSurface(definition));
-
-  const vertexTween = tweens.create()
-    .duration(1400)
-    .easing(Tweens.easing.smootherstep)
-    .onUpdate(t => {
-      gl.uniform1f(uniforms.uInterpolate, t);
-    })
-    .start();
+function setGeometry(definition) {
+  parametricSurface.generate(definition);
+  mesh.geometry = parametricSurface.geometry;
 }
-
-fpsControls.scale = 3;
-fpsControls.center(vec3.fromValues(0, 0, 0));
 
 const parametricControls = new ParametricControls();
-document.getElementById('plotControls').appendChild(parametricControls.domElement);
-parametricControls.ondefinition = generateMesh;
+document.getElementById('surfaceParameters').appendChild(parametricControls.domElement);
+parametricControls.onDefinition = setGeometry;
+setGeometry(parametricControls.getDefinition());
 
-gl.enable(gl.DEPTH_TEST);
-gl.clearColor(0.1, 0.1, 0.1, 1);
-generateMesh(parametricControls.getDefinition());
 window.addEventListener('resize', resize);
 resize();
 render();

@@ -4,10 +4,11 @@ import NumberInput from './NumberInput';
 
 export default class {
   constructor() {
+
     const update = debounce(() => {
-      if (this.ondefinition) {
+      if (this.onDefinition) {
         const definition = this.getDefinition();
-        this.ondefinition(definition);
+        this.onDefinition(definition);
       }
     }, 500);
 
@@ -82,10 +83,16 @@ export default class {
     // this.uStart.value = 0; this.uEnd.value = 6.2832;
     // this.vStart.value = 0; this.vEnd.value = 1.58;
 
+    // plane
+    // this.fx.value = 'u';
+    // this.fy.value = 'v';
+    // this.fz.value = '0';
+    // this.uStart.value = 0; this.uEnd.value = 1;
+    // this.vStart.value = 0; this.vEnd.value = 1;
 
     this.rows.value = 96; this.columns.value = 96;
   }
-  
+
   getDefinition() {
     const definition = {
       u0: this.uStart.value, u1: this.uEnd.value,
@@ -96,6 +103,7 @@ export default class {
       rows: Math.min(512, Math.round(this.rows.value)),
       columns: Math.min(512, Math.round(this.columns.value))
     };
+
     return definition;
   }
 }
