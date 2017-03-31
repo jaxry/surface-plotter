@@ -3,16 +3,18 @@
 <head>
   <meta charset="utf-8">
   <title>Plot Box</title>
-  <link href="css/main.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.3.2/gl-matrix-min.js"></script>
+  <link href="main.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/84/three.min.js"></script>
 </head>
 
 <body>
-  <main class="plotContainer">
-    <canvas id="plot" width="0" height="0" tabindex="0"></canvas>
-    <section id="plotControls"></section>
+  <main>
+    <section id="plotContainer" tabindex="0">
+      <canvas id="plot"></canvas>
+    </section>
+    <section id="surfaceParameters"></section>
   </main>
-  
+
   <script src="dist.js"></script>
 </body>
 </html>

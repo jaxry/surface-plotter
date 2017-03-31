@@ -8,35 +8,41 @@ textarea:invalid {
   background: #faa;
 }
 
-.plotContainer {
+h1 {
+  font-size: 1.5em;
+  text-align: center;
+  color: #eef;
+}
+
+h2 {
+  font-size: 1em;
+  text-align: center;
+}
+
+main {
   display: flex;
   height: 100%;
-  /*flex-direction: column;*/
+}
+
+#plotContainer {
+  overflow:hidden;
+  outline: none;
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
 }
 
 #plot {
   flex: 1 0 0;
-  outline: none;
-}
+} 
 
-#plotControls {
+#surfaceParameters {
   flex: 0 0 300px;
   overflow: auto;
   color: #fff;
   background: #333;
   padding: 5px;
   /*width: 275px;*/
-}
-
-#plotControls h1 {
-  font-size: 1.5em;
-  text-align: center;
-  color: #eef;
-}
-
-#plotControls h2 {
-  font-size: 1em;
-  text-align: center;
 }
 
 .equationInput {
