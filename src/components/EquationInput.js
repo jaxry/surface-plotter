@@ -9,9 +9,8 @@ export default class {
       onInput(this.equation);
     });
 
-
     this.domElement = buildDomTree(
-      createElem('label', {class: 'equationInput',}), [
+      createElem('label', {class: 'equationInput'}), [
         createElem('var', null, name),
         this.textarea
       ]
@@ -43,14 +42,14 @@ export default class {
 
 function evalEquation(equation) {
   const eq = new Function(`
-    const 
+    const
       e = Math.E, pi = Math.PI,
       cos = Math.cos, sin = Math.sin, tan = Math.tan,
       acos = Math.acos, asin = Math.asin, atan = Math.atan, atan2 = Math.atan2,
       cosh = Math.cosh, sinh = Math.sinh, tanh = Math.tanh,
       acosh = Math.acosh, asinh = Math.asinh, atanh = Math.atanh,
       sqrt = Math.sqrt, pow = Math.pow, exp = Math.exp, log = Math.log,
-      abs = Math.abs, ceil = Math.ceil, floor = Math.floor, max = Math.max, min = Math.min, 
+      abs = Math.abs, ceil = Math.ceil, floor = Math.floor, max = Math.max, min = Math.min,
       random = Math.random, sign = Math.sign, round = Math.round;
 
     return (u, v) => ${equation};

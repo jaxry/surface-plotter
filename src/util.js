@@ -46,6 +46,9 @@ export function buildDomTree(parent, children) {
       buildDomTree(children[i-1], child);
     }
     else {
+      if (!(child instanceof Node)) {
+        child = document.createTextNode(child);
+      }
       parent.appendChild(child);
     }
   }

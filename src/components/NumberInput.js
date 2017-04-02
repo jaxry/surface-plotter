@@ -6,7 +6,7 @@ export default class {
     this.input.addEventListener('input', onInput);
 
     this.domElement = buildDomTree(
-      createElem('label', {class: 'numberInput' }), [
+      createElem('label', {class: 'numberInput'}), [
         createElem('span', null, name),
         this.input
       ]

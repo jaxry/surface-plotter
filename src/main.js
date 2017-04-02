@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Tweens from './Tweens';
 import ParametricSurface from './ParametricSurface';
 import OrbitControls from './OrbitControls';
+import Tabs from './components/Tabs';
 import ParametricControls from './components/ParametricControls';
 
 THREE.Object3D.DefaultMatrixAutoUpdate = false;
@@ -73,7 +74,7 @@ function setGeometry(definition) {
 }
 
 const parametricControls = new ParametricControls();
-document.getElementById('surfaceParameters').appendChild(parametricControls.domElement);
+document.getElementById('controls').appendChild(parametricControls.domElement);
 parametricControls.onDefinition = setGeometry;
 setGeometry(parametricControls.getDefinition());
 
