@@ -12,7 +12,7 @@ export default class {
     this.center = new THREE.Vector3();
     this.matrixNeedsUpdate = true;
 
-    this.panSensitivity = 0.002;
+    this.panSensitivity = 0.0006;
     this.rotateSensitivity = 0.0012;
     this.scaleSensitivity = 1.1;
 
@@ -57,7 +57,7 @@ export default class {
   }
 
   _mousePan(e) {
-    this.pan(e.movementX * this.panSensitivity, -e.movementY * this.panSensitivity);
+    this.pan(e.movementX * this.panSensitivity * this.radius, -e.movementY * this.panSensitivity * this.radius);
   }
 
   update() {
