@@ -16,7 +16,7 @@ var renderer = new THREE.WebGLRenderer({
 renderer.setFaceCulling(THREE.CullFaceNone);
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.05, 500);
 const tweens = new Tweens();
 
 const texture = new THREE.TextureLoader().load('images/UV_Grid_Sm.jpg');

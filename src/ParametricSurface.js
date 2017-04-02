@@ -5,6 +5,7 @@ const eps = 0.00001;
 export default class {
   constructor() {
     this.geometry = new THREE.BufferGeometry();
+    this.morphPositions;
     this.lastDefinition = {};
   }
 
@@ -118,13 +119,14 @@ export default class {
 
     if (this.lastDefinition.rows !== definition.rows || this.lastDefinition.columns !== definition.columns) {
       this._newGeometry(definition.rows, definition.columns);
+      this.morphPositions = this.geometry.getAttribute('position').clone();
       animatable = false;
     }
     else {
-      this.geometry.morphAttributes.position = [
-        this.geometry.getAttribute('position').clone()
-      ];
-
+      const positions = this.geometry.getAttribute('position');
+      this.geometry.addAttribute('position', this.morphPositions);
+      this.morphPositions = positions;
+      this.geometry.morphAttributes.position = [this.morphPositions];
       animatable = true;
     }
 
