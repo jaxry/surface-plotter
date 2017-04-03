@@ -31,16 +31,15 @@ export default class {
     const inputRow = () => createElem('div', {class: 'inputRow'});
 
     this.domElement = buildDomTree(
-      createElem('div', {class: 'parametricControls'}), [
-        createElem('h1', null, 'Parametric Surface Plotter'),
+      createElem('div', {class: 'parametricControls content'}), [
         inputGroup(), [
-          createElem('h2', null, 'Equation'),
+          createElem('h3', null, 'Equation'),
           this.fx.domElement,
           this.fy.domElement,
           this.fz.domElement,
         ],
         inputGroup(), [
-          createElem('h2', null, 'Domain'),
+          createElem('h3', null, 'Domain'),
           inputRow(), [
             this.uStart.domElement,
             this.uEnd.domElement
@@ -51,7 +50,7 @@ export default class {
           ]
         ],
         inputGroup(), [
-          createElem('h2', null, 'Mesh Detail'),
+          createElem('h3', null, 'Mesh Detail'),
           inputRow(), [
             this.rows.domElement,
             this.columns.domElement

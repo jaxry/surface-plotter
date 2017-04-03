@@ -4,6 +4,7 @@ import ParametricSurface from './ParametricSurface';
 import OrbitControls from './OrbitControls';
 import Tabs from './components/Tabs';
 import ParametricControls from './components/ParametricControls';
+import {createElem} from './util';
 
 THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
@@ -74,10 +75,19 @@ function setGeometry(definition) {
 }
 
 const parametricControls = new ParametricControls();
-document.getElementById('controls').appendChild(parametricControls.domElement);
 parametricControls.onDefinition = setGeometry;
 setGeometry(parametricControls.getDefinition());
 
+const surfaceControls = new Tabs();
+surfaceControls.add('Parametric', parametricControls.domElement);
+surfaceControls.add('Implicit', createElem('div', null, '<p>Nothing here yet</p>'));
+
+const controls = document.getElementById('controls');
+controls.appendChild(createElem('h2', {class: 'withTabs'}, 'Surface Type'));
+controls.appendChild(surfaceControls.domElement);
+controls.appendChild(createElem('h2', null, 'Graphics'));
+
 window.addEventListener('resize', resize);
+
 resize();
 render();

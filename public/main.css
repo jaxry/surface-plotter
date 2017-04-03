@@ -8,25 +8,40 @@ textarea:invalid {
   background: #faa;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
 h1 {
   font-size: 1.5em;
-  text-align: center;
-  color: #eef;
 }
 
 h2 {
+  font-size: 1.25em;
+  background: #283593;
+  padding: 20px 0px 20px 30px;
+}
+
+h2.withTabs {
+  padding-bottom: 5px;
+}
+
+h3 {
   font-size: 1em;
-  text-align: center;
+  padding: 10px 0px;
 }
 
 label {
   display: inline-block;
-  padding: 5px 4px;
+  padding: 5px 0px;
 }
 
 label > * {
-  margin: 0 3px;
   vertical-align: middle;
+}
+
+label > *:not(:last-child) {
+  margin-right: 8px;
 }
 
 main {
@@ -49,8 +64,38 @@ main {
 #controls {
   flex: 0 0 310px;
   overflow: auto;
-  color: #fff;
-  background: #333;
+  color: #fafafa;
+  background: #303030;
+}
+
+.content {
+  padding: 0 5px 0 10px;
+}
+
+.tabs .tabList {
+  padding: 0;
+  margin: 0;
+  background: #283593;
+  display: flex;
+  list-style: none;
+}
+
+.tabs .tab {
+  box-sizing: border-box;
+  flex: 1 0 auto;
+  text-align: center;
+  color: #9e9e9e;
+  padding: 10px 15px;
+}
+
+.tabs .tab:hover {
+  background: #303f9f;
+  cursor: pointer;
+}
+
+.tabs .tab.active {
+  color: #fafafa;
+  border-bottom: 2px solid #ffa726;
 }
 
 .equationInput {
@@ -71,14 +116,14 @@ main {
   font-size: 0.85em;
 }
 
-.inputGroup:not(:first-of-type) {
-  margin-top: 40px;
-}
-
-.inputRow {
-  text-align: center;
-}
-
 .numberInput input {
   width: 60px;
+}
+
+.inputGroup {
+  padding: 12px 0;
+}
+
+.inputRow > *:not(:last-child) {
+  margin-right:15px;
 }
