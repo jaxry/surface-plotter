@@ -1,5 +1,3 @@
-import nodeResolve from 'rollup-plugin-node-resolve';
-
 export default {
   entry: 'src/main',
   dest: 'public/dist.js',
@@ -9,8 +7,5 @@ export default {
   external: [
     'three'
   ],
-  // plugins: [
-  //   nodeResolve({})
-  // ],
   format: 'iife'
 };
