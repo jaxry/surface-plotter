@@ -18,7 +18,7 @@ h1 {
 
 h2 {
   font-size: 1.25em;
-  background: #283593;
+  background: #303f9f;
   padding: 20px 0px 20px 30px;
 }
 
@@ -75,13 +75,12 @@ main {
 .tabs .tabList {
   padding: 0;
   margin: 0;
-  background: #283593;
+  background: #303f9f;
   display: flex;
   list-style: none;
 }
 
 .tabs .tab {
-  box-sizing: border-box;
   flex: 1 0 auto;
   text-align: center;
   color: #9e9e9e;
@@ -89,7 +88,7 @@ main {
 }
 
 .tabs .tab:hover {
-  background: #303f9f;
+  background: #3f51b5;
   cursor: pointer;
 }
 

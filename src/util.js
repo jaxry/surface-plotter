@@ -1,9 +1,18 @@
-export function loadImage(url) {
+export function request(url, responseType) {
+  const r = new XMLHttpRequest();
+  r.responseType = responseType;
+  r.open('GET', url);
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = url;
-    img.onload = () => resolve(img);
-    img.onerror = reject;
+    r.onreadystatechange = () => {
+
+      if (r.readyState !== XMLHttpRequest.DONE) {
+        return;
+      }
+
+      r.status === 200 ? resolve(r.response) : reject(r.status);
+    };
+
+    r.send();
   });
 }
 

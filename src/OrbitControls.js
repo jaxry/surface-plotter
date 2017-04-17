@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { clamp, detachableEvents, throttle, debounce } from './util';
+import { clamp, detachableEvents } from './util';
 
 const v = new THREE.Vector3();
 

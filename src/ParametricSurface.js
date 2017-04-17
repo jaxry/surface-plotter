@@ -6,6 +6,7 @@ export default class {
   constructor() {
     this.geometry = new THREE.BufferGeometry();
     this.morphPositions;
+    this.morphNormals;
     this.lastDefinition = {};
   }
 
@@ -15,7 +16,9 @@ export default class {
     this.geometry = new THREE.BufferGeometry();
     this.geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
     this.geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    this.geometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(count * 2), 2));
+    const uvs = new THREE.BufferAttribute(new Float32Array(count * 2), 2);
+    this.geometry.addAttribute('uv', uvs);
+    this.geometry.addAttribute('uv2', uvs);
 
     const tileRows = rows - 1;
     const tileColumns = columns - 1;
@@ -120,13 +123,18 @@ export default class {
     if (this.lastDefinition.rows !== definition.rows || this.lastDefinition.columns !== definition.columns) {
       this._newGeometry(definition.rows, definition.columns);
       this.morphPositions = this.geometry.getAttribute('position').clone();
+      this.morphNormals = this.geometry.getAttribute('normal').clone();
       animatable = false;
     }
     else {
       const positions = this.geometry.getAttribute('position');
+      const normals = this.geometry.getAttribute('normal');
       this.geometry.addAttribute('position', this.morphPositions);
+      this.geometry.addAttribute('normal', this.morphNormals);
       this.morphPositions = positions;
+      this.morphNormals = normals;
       this.geometry.morphAttributes.position = [this.morphPositions];
+      this.geometry.morphAttributes.normal = [this.morphNormals];
       animatable = true;
     }
 
