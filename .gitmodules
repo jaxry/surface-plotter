@@ -1,0 +1,3 @@
+[submodule "public/presets"]
+	path = public/presets
+	url = https://github.com/jaxry/surface-plotter-presets
