@@ -35,6 +35,7 @@ function resize() {
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
+  render();
 }
 
 const material = new THREE.MeshPhysicalMaterial({
@@ -53,7 +54,7 @@ mesh.castShadow = true;
 mesh.receiveShadow = true;
 scene.add(mesh);
 
-const orbitControls = new OrbitControls(camera, canvas);
+const orbitControls = new OrbitControls(camera, mesh, canvas);
 orbitControls.onUpdate = render;
 
 const parametricSurface = new ParametricSurface();

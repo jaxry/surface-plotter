@@ -27,7 +27,7 @@ export default class {
     }
 
     if (lights.directional) {
-      const distance = 5;
+      const distance = 1;
       const nearPlane = 1;
 
       for (let info of lights.directional) {
@@ -36,11 +36,17 @@ export default class {
         light.updateMatrix();
         if (info.shadow === undefined || info.shadow) {
           light.castShadow = true;
-          light.shadow.bias = -0.02;
+          light.shadow.bias = -0.03;
           light.shadow.mapSize.set(1024, 1024);
+          light.shadow.camera.left = -distance;
+          light.shadow.camera.right = distance;
+          light.shadow.camera.bottom = -distance;
+          light.shadow.camera.top = distance;
           light.shadow.camera.near = nearPlane;
           light.shadow.camera.far = 2 * distance + nearPlane;
           light.shadow.camera.matrixAutoUpdate = true;
+
+          // group.add(new THREE.CameraHelper(light.shadow.camera));
         }
 
         group.add(light);

@@ -4,18 +4,18 @@ import { clamp, detachableEvents } from './util';
 const v = new THREE.Vector3();
 
 export default class {
-  constructor(camera, domElement) {
+  constructor(camera, object, domElement) {
     this.camera = camera;
+    this.object = object;
     this.domElement = domElement;
 
     this.radius = 3;
     this.center = new THREE.Vector3();
-    this.matrixNeedsUpdate = true;
+    this.update();
 
     this.panSensitivity = 0.0006;
     this.rotateSensitivity = 0.0012;
     this.scaleSensitivity = 1.1;
-
     this._mouseAction;
     this._detachEvents = detachableEvents([
       {
@@ -57,13 +57,17 @@ export default class {
   }
 
   _mousePan(e) {
-    this.pan(e.movementX * this.panSensitivity * this.radius, -e.movementY * this.panSensitivity * this.radius);
+    this.pan(e.movementX * this.panSensitivity , -e.movementY * this.panSensitivity);
   }
 
   update() {
-    const forward = v.set(0, 0, 1).applyQuaternion(this.camera.quaternion);
-    this.camera.position.addVectors(this.center, forward.multiplyScalar(this.radius));
+    this.camera.position.set(0, 0, 1).applyQuaternion(this.camera.quaternion);
     this.camera.updateMatrix();
+
+    this.object.scale.setScalar(1 / this.radius);
+    this.object.position.set(-this.center.x, -this.center.y, -this.center.z);
+    this.object.updateMatrix();
+
     if (this.onUpdate) {
       this.onUpdate();
     }
