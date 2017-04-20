@@ -61,18 +61,17 @@ export default class {
   }
 
   update() {
-    if (this.matrixNeedsUpdate) {
-      const forward = v.set(0, 0, 1).applyQuaternion(this.camera.quaternion);
-      this.camera.position.addVectors(this.center, forward.multiplyScalar(this.radius));
-
-      this.camera.updateMatrix();
-      this.matrixNeedsUpdate = false;
+    const forward = v.set(0, 0, 1).applyQuaternion(this.camera.quaternion);
+    this.camera.position.addVectors(this.center, forward.multiplyScalar(this.radius));
+    this.camera.updateMatrix();
+    if (this.onUpdate) {
+      this.onUpdate();
     }
   }
 
   scale(amount) {
     this.radius *= amount;
-    this.matrixNeedsUpdate = true;
+    this.update();
   }
 
   rotate(dx, dy) {
@@ -83,7 +82,7 @@ export default class {
       'ZYX'
     );
 
-    this.matrixNeedsUpdate = true;
+    this.update();
   }
 
   pan(dx, dy) {
@@ -93,7 +92,7 @@ export default class {
     const up = v.set(0, dy, 0).applyQuaternion(this.camera.quaternion);
     this.center.add(up);
 
-    this.matrixNeedsUpdate = true;
+    this.update();
   }
 
   detach() {

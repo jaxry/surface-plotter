@@ -69,7 +69,7 @@ export function clamp(x, min, max) {
   return Math.min(Math.max(x, min), max);
 }
 
-export function debounce(fn, wait, immediate) {
+function limiter(fn, wait, immediate, debounce, timeoutFn, clearTimeoutFn) {
   let timeoutID;
   let lastArguments;
 
@@ -77,7 +77,7 @@ export function debounce(fn, wait, immediate) {
     if (lastArguments) {
       fn.apply(this, lastArguments);
       lastArguments = null;
-      timeoutID = setTimeout(timeout, wait);
+      timeoutID = timeoutFn(timeout, wait);
     }
     else {
       timeoutID = null;
@@ -88,35 +88,21 @@ export function debounce(fn, wait, immediate) {
     if (immediate && !timeoutID) {
       timeout();
     }
-    else {
-      clearTimeout(timeoutID);
-      timeoutID = setTimeout(timeout, wait);
+    else if (debounce) {
+      clearTimeoutFn(timeoutID);
+      timeoutID = timeoutFn(timeout, wait);
     }
   };
 }
 
+export function debounce(fn, wait, immediate) {
+  return limiter(fn, wait, immediate, true, setTimeout, clearTimeout);
+}
+
 export function throttle(fn, wait) {
-  let timeoutID;
-  let lastArguments;
+  return limiter(fn, wait, true, false, setTimeout, clearTimeout);
+}
 
-  function timeout() {
-    if (lastArguments) {
-      fn.apply(this, lastArguments);
-      lastArguments = null;
-      timeoutID = setTimeout(timeout, wait);
-    }
-    else {
-      timeoutID = null;
-    }
-  }
-
-  return function() {
-    lastArguments = arguments;
-    if (!timeoutID) {
-      timeout();
-    }
-    else {
-      lastArguments = arguments;
-    }
-  };
+export function throttleAnimationFrame(fn) {
+  return limiter(fn, null, true, false, requestAnimationFrame, cancelAnimationFrame);
 }

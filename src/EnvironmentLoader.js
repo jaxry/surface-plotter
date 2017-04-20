@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { request } from './util';
 
 export default class {
@@ -16,35 +17,33 @@ export default class {
       });
   }
 
-  _createDirectional(info) {
-    const light = new THREE.DirectionalLight(info.color, info.intensity);
-    light.position.setFromSpherical(new THREE.Spherical(10, info.lat * Math.PI, info.lon * Math.PI));
-    light.updateMatrix();
-
-    if (info.shadow === undefined || info.shadow) {
-      light.castShadow = true;
-      light.shadow.bias = -0.0003;
-      light.shadow.mapSize.set(1024, 1024);
-      light.shadow.camera.matrixAutoUpdate = true;
-    }
-
-    return light;
-  }
-
   _setupLights(lights) {
 
     const group = new THREE.Group();
 
     if (lights.hemisphere) {
       const info = lights.hemisphere;
-      group.add(
-        new THREE.HemisphereLight(info.sky, info.ground, info.intensity)
-      );
+      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity));
     }
 
     if (lights.directional) {
+      const distance = 5;
+      const nearPlane = 1;
+
       for (let info of lights.directional) {
-        group.add(this._createDirectional(info));
+        const light = new THREE.DirectionalLight(info.color, info.intensity);
+        light.position.setFromSpherical(new THREE.Spherical(distance + nearPlane, info.lat * Math.PI, info.lon * Math.PI));
+        light.updateMatrix();
+        if (info.shadow === undefined || info.shadow) {
+          light.castShadow = true;
+          light.shadow.bias = -0.02;
+          light.shadow.mapSize.set(1024, 1024);
+          light.shadow.camera.near = nearPlane;
+          light.shadow.camera.far = 2 * distance + nearPlane;
+          light.shadow.camera.matrixAutoUpdate = true;
+        }
+
+        group.add(light);
       }
     }
 

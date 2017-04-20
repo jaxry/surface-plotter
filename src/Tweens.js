@@ -99,6 +99,8 @@ class Tween {
 class TweenFactory {
   constructor() {
     this.tweens = new Set();
+    this.updating = false;
+    this._callUpdate = () => this.update();
   }
 
   create(fromObj) {
@@ -107,17 +109,27 @@ class TweenFactory {
   }
 
   update() {
-    for (let tween of this.tweens) {
-      tween.update();
+    if (this.updating) {
+      for (let tween of this.tweens) {
+        tween.update();
+      }
+      requestAnimationFrame(this._callUpdate);
     }
   }
 
   _start(tween) {
     this.tweens.add(tween);
+    if (!this.updating) {
+      this.updating = true;
+      this.update();
+    }
   }
 
   _stop(tween) {
     this.tweens.delete(tween);
+    if (!this.tweens.size) {
+      this.updating = false;
+    }
   }
 }
 

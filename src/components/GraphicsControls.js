@@ -15,6 +15,7 @@ export default class {
     this.domElement = buildDomTree(
       createElem('div', {class: 'parametricControls content'}), [
         inputGroup(), [
+          createElem('h3', null, 'Presets'),
           this.environment.domElement,
         ]
       ]
