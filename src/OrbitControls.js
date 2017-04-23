@@ -13,7 +13,7 @@ export default class {
     this.center = new THREE.Vector3();
     this.update();
 
-    this.panSensitivity = 0.0006;
+    this.panSensitivity = 0.0004;
     this.rotateSensitivity = 0.0012;
     this.scaleSensitivity = 1.1;
     this._mouseAction;
@@ -65,7 +65,7 @@ export default class {
     this.camera.updateMatrix();
 
     this.object.scale.setScalar(1 / this.radius);
-    this.object.position.set(-this.center.x, -this.center.y, -this.center.z);
+    this.object.position.copy(this.center).divideScalar(this.radius).negate();
     this.object.updateMatrix();
 
     if (this.onUpdate) {
@@ -90,10 +90,10 @@ export default class {
   }
 
   pan(dx, dy) {
-    const right = v.set(dx, 0, 0).applyQuaternion(this.camera.quaternion);
+    const right = v.set(dx * this.radius, 0, 0).applyQuaternion(this.camera.quaternion);
     this.center.add(right);
 
-    const up = v.set(0, dy, 0).applyQuaternion(this.camera.quaternion);
+    const up = v.set(0, dy * this.radius, 0).applyQuaternion(this.camera.quaternion);
     this.center.add(up);
 
     this.update();

@@ -1,4 +1,4 @@
-import { createElem, buildDomTree, debounce } from '../util';
+import { createElem, buildDomTree, debounce, clamp } from '../util';
 import EquationInput from './EquationInput';
 import NumberInput from './NumberInput';
 
@@ -99,8 +99,8 @@ export default class {
       fx: this.fx.equation,
       fy: this.fy.equation,
       fz: this.fz.equation,
-      rows: Math.min(512, Math.round(this.rows.value)),
-      columns: Math.min(512, Math.round(this.columns.value))
+      rows: clamp(Math.round(this.rows.value), 2, 512),
+      columns: clamp(Math.round(this.columns.value), 2, 512)
     };
 
     return definition;
