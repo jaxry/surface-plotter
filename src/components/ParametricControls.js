@@ -1,4 +1,5 @@
 import { createElem, buildDomTree, debounce, clamp } from '../util';
+import { inputGroup, inputRow } from '../commonElements';
 import EquationInput from './EquationInput';
 import NumberInput from './NumberInput';
 
@@ -7,8 +8,7 @@ export default class {
 
     const update = debounce(() => {
       if (this.onDefinition) {
-        const definition = this.getDefinition();
-        this.onDefinition(definition);
+        this.onDefinition(this.definition);
       }
     }, 500);
 
@@ -16,19 +16,16 @@ export default class {
     this.fy = new EquationInput('y(u, v)', update);
     this.fz = new EquationInput('z(u, v)', update);
 
-    this.uStart = new NumberInput('<var>u</var> Start', update, 0.1);
-    this.uEnd = new NumberInput('<var>u</var> End', update, 0.1);
+    this.uStart = new NumberInput('<var>u</var> Start', update, {step: 0.1});
+    this.uEnd = new NumberInput('<var>u</var> End', update, {step: 0.1});
 
-    this.vStart = new NumberInput('<var>v</var> Start', update, 0.1);
-    this.vEnd = new NumberInput('<var>v</var> End', update, 0.1);
+    this.vStart = new NumberInput('<var>v</var> Start', update, {step: 0.1});
+    this.vEnd = new NumberInput('<var>v</var> End', update, {step: 0.1});
 
     this.rows = new NumberInput('Rows', update, 1);
     this.columns = new NumberInput('Columns', update, 1);
 
     this.defaultValues();
-
-    const inputGroup = () => createElem('div', {class: 'inputGroup'});
-    const inputRow = () => createElem('div', {class: 'inputRow'});
 
     this.domElement = buildDomTree(
       createElem('div', {class: 'parametricControls content'}), [
@@ -92,8 +89,8 @@ export default class {
     this.rows.value = 96; this.columns.value = 96;
   }
 
-  getDefinition() {
-    const definition = {
+  get definition() {
+    return {
       u0: this.uStart.value, u1: this.uEnd.value,
       v0: this.vStart.value, v1: this.vEnd.value,
       fx: this.fx.equation,
@@ -102,7 +99,5 @@ export default class {
       rows: clamp(Math.round(this.rows.value), 2, 512),
       columns: clamp(Math.round(this.columns.value), 2, 512)
     };
-
-    return definition;
   }
 }

@@ -1,4 +1,4 @@
-export function request(url, responseType) {
+export function request(url, responseType = "text") {
   const r = new XMLHttpRequest();
   r.responseType = responseType;
   r.open('GET', url);
@@ -83,6 +83,7 @@ function limiter(fn, wait, immediate, debounce, timeoutFn, clearTimeoutFn) {
       timeoutID = null;
     }
   }
+
   return function() {
     lastArguments = arguments;
     if (immediate && !timeoutID) {

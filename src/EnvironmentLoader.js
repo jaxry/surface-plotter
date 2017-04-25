@@ -36,7 +36,7 @@ export default class {
         light.updateMatrix();
         if (info.shadow === undefined || info.shadow) {
           light.castShadow = true;
-          light.shadow.bias = -0.03;
+          light.shadow.bias = -0.02;
           light.shadow.mapSize.set(1024, 1024);
           light.shadow.camera.left = -distance;
           light.shadow.camera.right = distance;

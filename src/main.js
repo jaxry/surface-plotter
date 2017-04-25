@@ -39,9 +39,7 @@ function resize() {
 }
 
 const material = new THREE.MeshPhysicalMaterial({
-  color: 0x00ff00,
-  roughness: 0.3,
-  metalness: 0,
+  color: 0xffffff,
   morphTargets: true,
   morphNormals: true,
   side: THREE.DoubleSide
@@ -86,20 +84,29 @@ function setEnvironment({cubemap, lights}) {
   render();
 }
 
+function setMaterial(definition) {
+  Object.assign(material, definition);
+  material.needsUpdate = true;
+  render();
+}
+
 const environmentLoader = new EnvironmentLoader('/presets/environments/');
 
 const parametricControls = new ParametricControls();
 parametricControls.onDefinition = setParametricGeometry;
-setParametricGeometry(parametricControls.getDefinition());
+setParametricGeometry(parametricControls.definition);
 
 const surfaceControls = new Tabs();
 surfaceControls.add('Parametric', parametricControls.domElement);
 surfaceControls.add('Implicit', createElem('div', null, '<p>Not implemented</p>'));
 
 const graphicsControls = new GraphicsControls();
-graphicsControls.onEnvironmentChange = name => {
-  environmentLoader.load(name).then(setEnvironment);
+graphicsControls.onEnvironment = name => {
+  environmentLoader.load(name)
+    .then(setEnvironment);
 };
+graphicsControls.onMaterial = setMaterial;
+setMaterial(graphicsControls.material);
 
 environmentLoader.init
   .then(names => graphicsControls.addEnvironments(names));
@@ -115,4 +122,3 @@ buildDomTree(
 
 window.addEventListener('resize', resize);
 resize();
-render();

@@ -2,6 +2,7 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
+  font-family: "sans-serif";
 }
 
 textarea:invalid {
@@ -41,6 +42,7 @@ label > * {
 }
 
 label > *:not(:last-child) {
+  margin-left: 0;
   margin-right: 8px;
 }
 
@@ -119,10 +121,18 @@ main {
   width: 60px;
 }
 
+.rangeInput input[type="range"] {
+  width: 100px;
+}
+
+.rangeInput input[type="number"] {
+  width: 40px;
+}
+
 .inputGroup {
   padding: 12px 0;
 }
 
-.inputRow > *:not(:last-child) {
+.inputRow > :not(:last-child) {
   margin-right:15px;
 }
