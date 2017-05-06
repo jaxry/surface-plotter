@@ -121,16 +121,8 @@ main {
   width: 60px;
 }
 
-.rangeInput input[type="range"] {
-  width: 100px;
-}
-
-.rangeInput input[type="number"] {
-  width: 40px;
-}
-
 .inputGroup {
-  padding: 12px 0;
+  padding: 10px 0;
 }
 
 .inputRow > :not(:last-child) {
