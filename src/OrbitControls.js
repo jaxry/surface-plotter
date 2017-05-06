@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { clamp, detachableEvents } from './util';
 
 const v = new THREE.Vector3();
+const q = new THREE.Quaternion();
 
 export default class {
   constructor(camera, object, domElement) {
@@ -21,9 +22,15 @@ export default class {
       {
         element: domElement,
         type: 'mousedown',
-        callback: () => {
+        callback: e => {
           this.domElement.requestPointerLock();
-          this._mouseAction = this._mousePan;
+          if (e.which === 1) {
+            this._mouseAction = this._mousePan;
+          }
+          else {
+            this._mouseAction = this._mouseObject;
+          }
+
         }
       },
 
@@ -58,6 +65,10 @@ export default class {
 
   _mousePan(e) {
     this.pan(e.movementX * this.panSensitivity , -e.movementY * this.panSensitivity);
+  }
+
+  _mouseObject(e) {
+    this.objectRotate(e.movementX * this.rotateSensitivity, e.movementY * this.rotateSensitivity);
   }
 
   update() {
@@ -95,6 +106,18 @@ export default class {
 
     const up = v.set(0, dy * this.radius, 0).applyQuaternion(this.camera.quaternion);
     this.center.add(up);
+
+    this.update();
+  }
+
+  objectRotate(dx, dy) {
+    const up = v.set(0, 1, 0).applyQuaternion(this.camera.quaternion);
+    q.setFromAxisAngle(up, dx);
+    this.object.quaternion.premultiply(q);
+
+    const right = v.set(1, 0, 0).applyQuaternion(this.camera.quaternion);
+    q.setFromAxisAngle(right, dy);
+    this.object.quaternion.premultiply(q);
 
     this.update();
   }
