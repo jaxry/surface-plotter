@@ -3,6 +3,7 @@ import Tweens from './Tweens';
 import ParametricSurface from './ParametricSurface';
 import OrbitControls from './OrbitControls';
 import EnvironmentLoader from './EnvironmentLoader';
+import MaterialLoader from './MaterialLoader';
 import Tabs from './components/Tabs';
 import ParametricControls from './components/ParametricControls';
 import GraphicsControls from './components/GraphicsControls';
@@ -24,7 +25,7 @@ renderer.shadowMap.renderReverseSided = false;
 renderer.shadowMap.renderSingleSided = false;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 1, 0.05, 500);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 100);
 const render = throttleAnimationFrame(() => {
   renderer.render(scene, camera);
 });
@@ -40,6 +41,8 @@ function resize() {
 
 const material = new THREE.MeshPhysicalMaterial({
   color: 0xffffff,
+  roughness: 0.5,
+  metalness: 0,
   morphTargets: true,
   morphNormals: true,
   side: THREE.DoubleSide
@@ -50,7 +53,6 @@ mesh.material = material;
 mesh.frustumCulled = false;
 mesh.castShadow = true;
 mesh.receiveShadow = true;
-scene.add(mesh);
 
 const orbitControls = new OrbitControls(camera, mesh, canvas);
 orbitControls.onUpdate = render;
@@ -58,8 +60,22 @@ orbitControls.onUpdate = render;
 const parametricSurface = new ParametricSurface();
 const tweens = new Tweens();
 
+let materialProperties = {};
+
+function setDisplacementScale(surfaceScale, surfaceTiles) {
+  const baseScale = 0.04;
+  const ds = materialProperties.displacementScale || 0;
+
+  material.displacementScale = baseScale * surfaceScale * ds / surfaceTiles;
+  material.displacementBias = -0.5 * material.displacementScale;
+  material.needsUpdate = true;
+}
+
 function setParametricGeometry(definition) {
   const {animatable, center} = parametricSurface.generate(definition);
+
+  setDisplacementScale(parametricSurface.scale, parametricSurface.tiles);
+
   if (animatable) {
     mesh.morphTargetInfluences = [1];
     tweens.create(mesh.morphTargetInfluences)
@@ -84,13 +100,34 @@ function setEnvironment({cubemap, lights}) {
   render();
 }
 
-function setMaterial(definition) {
-  Object.assign(material, definition);
+function setMaterialOptions({tiles}) {
+  setDisplacementScale(parametricSurface.scale, tiles);
+  parametricSurface.updateUvs(tiles);
+
   material.needsUpdate = true;
   render();
 }
 
-const environmentLoader = new EnvironmentLoader('/presets/environments/');
+const environmentLoader = new EnvironmentLoader('/presets/environments');
+const materialLoader = new MaterialLoader('/presets/materials', renderer.getMaxAnisotropy());
+
+const graphicsControls = new GraphicsControls();
+
+graphicsControls.onEnvironment = name => {
+  environmentLoader.load(name)
+    .then(setEnvironment);
+};
+
+graphicsControls.onMaterial = name => {
+  materialLoader.load(name)
+    .then(properties => {
+      materialProperties = properties;
+      Object.assign(material, properties);
+      setMaterialOptions(graphicsControls.materialOptions);
+    });
+};
+
+graphicsControls.onMaterialOptions = setMaterialOptions;
 
 const parametricControls = new ParametricControls();
 parametricControls.onDefinition = setParametricGeometry;
@@ -99,17 +136,6 @@ setParametricGeometry(parametricControls.definition);
 const surfaceControls = new Tabs();
 surfaceControls.add('Parametric', parametricControls.domElement);
 surfaceControls.add('Implicit', createElem('div', null, '<p>Not implemented</p>'));
-
-const graphicsControls = new GraphicsControls();
-graphicsControls.onEnvironment = name => {
-  environmentLoader.load(name)
-    .then(setEnvironment);
-};
-graphicsControls.onMaterial = setMaterial;
-setMaterial(graphicsControls.material);
-
-environmentLoader.init
-  .then(names => graphicsControls.addEnvironments(names));
 
 buildDomTree(
   document.getElementById('controls'), [
@@ -122,3 +148,8 @@ buildDomTree(
 
 window.addEventListener('resize', resize);
 resize();
+
+environmentLoader.init
+  .then(names => graphicsControls.addEnvironments(names));
+materialLoader.init
+  .then(names => graphicsControls.addMaterials(names));

@@ -12,7 +12,7 @@ function evalEquation(equation) {
       abs = Math.abs, ceil = Math.ceil, floor = Math.floor, max = Math.max, min = Math.min,
       random = Math.random, sign = Math.sign, round = Math.round;
 
-    return (u, v) => ${equation};
+    return (u, v) => ${equation} || 0;
   `)();
 
   eq(); // call equation to check for reference errors

@@ -7,7 +7,7 @@ export default class {
 
     this.names;
 
-    this.init = request(`${basePath}index.json`, 'json')
+    this.init = request(`${basePath}/index.json`, 'json')
       .then(index => {
         return this.names = new Set(index.names);
       })
@@ -36,7 +36,7 @@ export default class {
         light.updateMatrix();
         if (info.shadow === undefined || info.shadow) {
           light.castShadow = true;
-          light.shadow.bias = -0.02;
+          light.shadow.bias = -0.03;
           light.shadow.mapSize.set(1024, 1024);
           light.shadow.camera.left = -distance;
           light.shadow.camera.right = distance;
@@ -47,6 +47,7 @@ export default class {
           light.shadow.camera.matrixAutoUpdate = true;
 
           // group.add(new THREE.CameraHelper(light.shadow.camera));
+          // group.add(new THREE.DirectionalLightHelper(light));
         }
 
         group.add(light);
@@ -73,7 +74,7 @@ export default class {
         ], resolve);
     });
 
-    const lightsPromise = request(`${envPath}lights.json`, 'json')
+    const lightsPromise = request(`${envPath}/lights.json`, 'json')
       .then(lights => this._setupLights(lights));
 
     return Promise.all([cubemapPromise, lightsPromise])

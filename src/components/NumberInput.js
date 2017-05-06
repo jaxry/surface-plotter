@@ -1,8 +1,8 @@
 import { createElem, buildDomTree } from '../util';
 
 export default class {
-  constructor(name, onInput, {step = 1} = {}) {
-    this.input = createElem('input', {type: 'number', step});
+  constructor(name, onInput, {step = 1, min='', max=''} = {}) {
+    this.input = createElem('input', {type: 'number', step, min, max});
     this.input.addEventListener('input', onInput);
 
     this.domElement = buildDomTree(

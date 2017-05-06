@@ -5,6 +5,10 @@ const eps = 0.00001;
 export default class {
   constructor() {
     this.geometry = new THREE.BufferGeometry();
+    this.tiles = 1;
+    this.scale = 1;
+
+    this.uvs;
     this.morphPositions;
     this.morphNormals;
     this.lastDefinition = {};
@@ -16,9 +20,12 @@ export default class {
     this.geometry = new THREE.BufferGeometry();
     this.geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
     this.geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    const uvs = new THREE.BufferAttribute(new Float32Array(count * 2), 2);
-    this.geometry.addAttribute('uv', uvs);
-    this.geometry.addAttribute('uv2', uvs);
+
+    this.uvs = new THREE.BufferAttribute(new Float32Array(count * 2), 2);
+
+    const scaledUvs = this.uvs.clone();
+    this.geometry.addAttribute('uv', scaledUvs);
+    this.geometry.addAttribute('uv2', scaledUvs);
 
     const tileRows = rows - 1;
     const tileColumns = columns - 1;
@@ -32,19 +39,19 @@ export default class {
         const botR = columns * (i + 1) + j + 1;
         const start = 6 * (tileColumns * i + j);
         if (i % 2 === j % 2) {
-          indices[start] = botL;
+          indices[start] = topL;
           indices[start + 1] = botR;
-          indices[start + 2] = topL;
+          indices[start + 2] = botL;
           indices[start + 3] = topL;
-          indices[start + 4] = botR;
-          indices[start + 5] = topR;
+          indices[start + 4] = topR;
+          indices[start + 5] = botR;
         }
         else {
           indices[start] = topL;
-          indices[start + 1] = botL;
-          indices[start + 2] = topR;
-          indices[start + 3] = botR;
-          indices[start + 4] = topR;
+          indices[start + 1] = topR;
+          indices[start + 2] = botL;
+          indices[start + 3] = topR;
+          indices[start + 4] = botR;
           indices[start + 5] = botL;
         }
       }
@@ -58,7 +65,6 @@ export default class {
 
     const positions =  this.geometry.getAttribute('position');
     const normals =  this.geometry.getAttribute('normal');
-    const uvs = this.geometry.getAttribute('uv');
 
     const center = new THREE.Vector3();
     const tempv = new THREE.Vector3();
@@ -79,8 +85,7 @@ export default class {
 
         f.set(fx(u, v), fy(u, v), fz(u, v));
 
-        center.add(f);
-
+        // approximate tangent vectors via finite differences
         let offset = u - eps;
         if (offset >= u0) {
           ru.subVectors(f, tempv.set(fx(offset, v), fy(offset, v), fz(offset, v)));
@@ -99,46 +104,73 @@ export default class {
           rv.subVectors(tempv.set(fx(u, offset), fy(u, offset), fz(u, offset)), f);
         }
 
-        normal.crossVectors(rv, ru).normalize();
+        // cross product of tangent vectors gives surface normal
+        normal.crossVectors(ru, rv).normalize();
 
         const index = columns * i + j;
         positions.setXYZ(index, f.x, f.y, f.z);
         normals.setXYZ(index, normal.x, normal.y, normal.z);
-        uvs.setXY(index, 2 * vd, 2 * ud);
+        this.uvs.setXY(index, ud, vd);
+
+        center.add(f);
       }
     }
 
     positions.needsUpdate = true;
     normals.needsUpdate = true;
-    uvs.needsUpdate = true;
 
     center.divideScalar(rows * columns);
+
+    this.scale = (Math.abs(u1 - u0) + Math.abs(v1 - v0)) / 2;
 
     return center;
   }
 
+  updateUvs(tiles = this.tiles) {
+    const uvsArray = this.uvs.array;
+    const scaledUvs = this.geometry.getAttribute('uv');
+    const scaledArray = scaledUvs.array;
+
+    for (let i = 0; i < uvsArray.length; i++) {
+      scaledArray[i] = tiles * uvsArray[i];
+    }
+    scaledUvs.needsUpdate = true;
+
+    this.tiles = tiles;
+  }
+
   generate(definition) {
     let animatable;
+    let center;
 
     if (this.lastDefinition.rows !== definition.rows || this.lastDefinition.columns !== definition.columns) {
       this._newGeometry(definition.rows, definition.columns);
+
       this.morphPositions = this.geometry.getAttribute('position').clone();
       this.morphNormals = this.geometry.getAttribute('normal').clone();
+
+      center = this._computeSurface(definition);
+      this.updateUvs();
+
       animatable = false;
     }
     else {
       const positions = this.geometry.getAttribute('position');
       const normals = this.geometry.getAttribute('normal');
+
       this.geometry.addAttribute('position', this.morphPositions);
       this.geometry.addAttribute('normal', this.morphNormals);
+
       this.morphPositions = positions;
       this.morphNormals = normals;
+
       this.geometry.morphAttributes.position = [this.morphPositions];
       this.geometry.morphAttributes.normal = [this.morphNormals];
+
+      center = this._computeSurface(definition);
+
       animatable = true;
     }
-
-    const center = this._computeSurface(definition);
 
     this.lastDefinition = definition;
 

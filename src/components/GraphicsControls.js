@@ -1,34 +1,23 @@
 import { createElem, buildDomTree, debounce } from '../util';
 import { inputGroup, inputRow } from '../commonElements';
-import SelectInput from './SelectInput.js';
-import RangeInput from './RangeInput.js';
+import SelectInput from './SelectInput';
+import NumberInput from './NumberInput';
 
 export default class {
   constructor() {
-    this.environmentSelect = new SelectInput('Preset', () => {
-      if (this.onEnvironment) {
-        this.onEnvironment(this.environmentSelect.value);
-      }
-    });
+    this.environmentSelect = new SelectInput('Scene', () => this.updateEnvironment());
 
-    this.materialPreset = new SelectInput('Texture');
-    this.materialPreset.add('None');
+    this.materialSelect = new SelectInput('Texture', () => this.updateMaterial());
 
-    const updateMaterial = () => {
-      if (this.onMaterial) {
-        this.onMaterial(this.material);
+    const updateOptions = () => {
+      if (this.onMaterialOptions) {
+        this.onMaterialOptions(this.materialOptions);
       }
     };
 
-    this.materialInput = {
-      roughness: new RangeInput('Roughness', updateMaterial),
-      metalness: new RangeInput('Metalness', updateMaterial),
-      reflectivity: new RangeInput('Reflectivity', updateMaterial),
-    };
-
-    this.materialInput.roughness.value = 0.5;
-    this.materialInput.metalness.value = 0;
-    this.materialInput.reflectivity.value = 0.5;
+    this.tiles = new NumberInput('Tiles', updateOptions, {min: 0});
+    this.tiles.domElement.title = 'The number of times a texture is repeated across the surface.';
+    this.tiles.value = 3;
 
     this.domElement = buildDomTree(
       createElem('div', {class: 'parametricControls content'}), [
@@ -38,29 +27,42 @@ export default class {
         ],
         inputGroup(), [
           createElem('h3', null, 'Material'),
-          inputRow(), [this.materialPreset.domElement],
-          inputRow(), [this.materialInput.roughness.domElement],
-          inputRow(), [this.materialInput.metalness.domElement],
-          inputRow(), [this.materialInput.reflectivity.domElement],
+          inputRow(), [this.materialSelect.domElement],
+          inputRow(), [this.tiles.domElement]
         ]
       ]
     );
+  }
+
+  updateEnvironment() {
+    if (this.onEnvironment) {
+      this.onEnvironment(this.environmentSelect.value);
+    }
+  }
+
+  updateMaterial() {
+    if (this.onMaterial) {
+      this.onMaterial(this.materialSelect.value);
+    }
   }
 
   addEnvironments(names) {
     for (let name of names) {
       this.environmentSelect.add(name);
     }
-    if (this.onEnvironment) {
-      this.onEnvironment(this.environmentSelect.value);
-    }
+    this.updateEnvironment();
   }
 
-  get material() {
-    const definition = {};
-    for (let name in this.materialInput) {
-      definition[name] = this.materialInput[name].value;
+  addMaterials(names) {
+    for (let name of names) {
+      this.materialSelect.add(name);
     }
-    return definition;
+    this.updateMaterial();
+  }
+
+  get materialOptions() {
+    return {
+      tiles: this.tiles.value
+    };
   }
 }

@@ -22,8 +22,8 @@ export default class {
     this.vStart = new NumberInput('<var>v</var> Start', update, {step: 0.1});
     this.vEnd = new NumberInput('<var>v</var> End', update, {step: 0.1});
 
-    this.rows = new NumberInput('Rows', update, 1);
-    this.columns = new NumberInput('Columns', update, 1);
+    this.rows = new NumberInput('Rows', update, {min: 2, max: 512});
+    this.columns = new NumberInput('Columns', update, {min: 2, max: 512});
 
     this.defaultValues();
 
@@ -83,10 +83,10 @@ export default class {
     // this.fx.value = 'u';
     // this.fy.value = 'v';
     // this.fz.value = '0';
-    // this.uStart.value = 0; this.uEnd.value = 1;
-    // this.vStart.value = 0; this.vEnd.value = 1;
+    // this.uStart.value = 0; this.uEnd.value = 7;
+    // this.vStart.value = 0; this.vEnd.value = 7;
 
-    this.rows.value = 96; this.columns.value = 96;
+    this.rows.value = 128; this.columns.value = 128;
   }
 
   get definition() {
