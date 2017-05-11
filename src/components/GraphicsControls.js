@@ -15,9 +15,9 @@ export default class {
       }
     };
 
-    this.tiles = new NumberInput('Tiles', updateOptions, {min: 0});
-    this.tiles.domElement.title = 'The number of times a texture is repeated across the surface.';
-    this.tiles.value = 3;
+    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 1});
+    this.uvScale.domElement.title = 'The higher the scale, the smaller the texture.';
+    this.uvScale.value = 3;
 
     this.domElement = buildDomTree(
       createElem('div', {class: 'parametricControls content'}), [
@@ -28,7 +28,7 @@ export default class {
         inputGroup(), [
           createElem('h3', null, 'Material'),
           inputRow(), [this.materialSelect.domElement],
-          inputRow(), [this.tiles.domElement]
+          inputRow(), [this.uvScale.domElement]
         ]
       ]
     );
@@ -62,7 +62,7 @@ export default class {
 
   get materialOptions() {
     return {
-      tiles: this.tiles.value
+      uvScale: Math.max(1, this.uvScale.value)
     };
   }
 }

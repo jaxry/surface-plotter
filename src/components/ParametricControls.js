@@ -12,9 +12,9 @@ export default class {
       }
     }, 500);
 
-    this.fx = new EquationInput('x(u, v)', update);
-    this.fy = new EquationInput('y(u, v)', update);
-    this.fz = new EquationInput('z(u, v)', update);
+    this.fx = new EquationInput('x(u, v)', ['u', 'v'], update);
+    this.fy = new EquationInput('y(u, v)', ['u', 'v'], update);
+    this.fz = new EquationInput('z(u, v)', ['u', 'v'], update);
 
     this.uStart = new NumberInput('<var>u</var> Start', update, {step: 0.1});
     this.uEnd = new NumberInput('<var>u</var> End', update, {step: 0.1});
@@ -22,8 +22,7 @@ export default class {
     this.vStart = new NumberInput('<var>v</var> Start', update, {step: 0.1});
     this.vEnd = new NumberInput('<var>v</var> End', update, {step: 0.1});
 
-    this.rows = new NumberInput('Rows', update, {min: 2, max: 512});
-    this.columns = new NumberInput('Columns', update, {min: 2, max: 512});
+    this.rows = new NumberInput('Rows / Columns', update, {min: 2, max: 512});
 
     this.defaultValues();
 
@@ -48,10 +47,7 @@ export default class {
         ],
         inputGroup(), [
           createElem('h3', null, 'Mesh Detail'),
-          inputRow(), [
-            this.rows.domElement,
-            this.columns.domElement
-          ]
+          this.rows.domElement,
         ]
       ]
     );
@@ -86,18 +82,19 @@ export default class {
     // this.uStart.value = 0; this.uEnd.value = 7;
     // this.vStart.value = 0; this.vEnd.value = 7;
 
-    this.rows.value = 128; this.columns.value = 128;
+    this.rows.value = 128;
   }
 
   get definition() {
+    const rows = clamp(Math.round(this.rows.value), 2, 512);
     return {
       u0: this.uStart.value, u1: this.uEnd.value,
       v0: this.vStart.value, v1: this.vEnd.value,
       fx: this.fx.equation,
       fy: this.fy.equation,
       fz: this.fz.equation,
-      rows: clamp(Math.round(this.rows.value), 2, 512),
-      columns: clamp(Math.round(this.columns.value), 2, 512)
+      rows: rows,
+      columns: rows
     };
   }
 }

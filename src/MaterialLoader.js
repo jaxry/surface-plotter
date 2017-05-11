@@ -15,7 +15,7 @@ const baseMaterialProps = {
   roughness: 0.5,
   metalness: 0,
   reflectivity: 0.5,
-  displacementScale: 1,
+  displacementScale: 0.04,
 };
 
 for (let texture of Object.values(textureProps)) {

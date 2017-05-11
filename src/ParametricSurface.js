@@ -1,31 +1,20 @@
 import * as THREE from 'three';
+import Surface from './Surface';
 
 const eps = 0.00001;
 
-export default class {
+export default class extends Surface {
   constructor() {
-    this.geometry = new THREE.BufferGeometry();
-    this.tiles = 1;
-    this.scale = 1;
-
-    this.uvs;
+    super();
     this.morphPositions;
     this.morphNormals;
     this.lastDefinition = {};
   }
 
   _newGeometry(rows, columns) {
-    const count = rows * columns;
+    const vertexCount = rows * columns;
 
-    this.geometry = new THREE.BufferGeometry();
-    this.geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    this.geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-
-    this.uvs = new THREE.BufferAttribute(new Float32Array(count * 2), 2);
-
-    const scaledUvs = this.uvs.clone();
-    this.geometry.addAttribute('uv', scaledUvs);
-    this.geometry.addAttribute('uv2', scaledUvs);
+    super._newGeometry(vertexCount);
 
     const tileRows = rows - 1;
     const tileColumns = columns - 1;
@@ -65,6 +54,8 @@ export default class {
 
     const positions =  this.geometry.getAttribute('position');
     const normals =  this.geometry.getAttribute('normal');
+    const uvs = this.geometry.getAttribute('uv');
+    const uvScale = this.uvScale;
 
     const center = new THREE.Vector3();
     const tempv = new THREE.Vector3();
@@ -110,7 +101,7 @@ export default class {
         const index = columns * i + j;
         positions.setXYZ(index, f.x, f.y, f.z);
         normals.setXYZ(index, normal.x, normal.y, normal.z);
-        this.uvs.setXY(index, ud, vd);
+        uvs.setXY(index, uvScale * ud, uvScale * vd);
 
         center.add(f);
       }
@@ -121,25 +112,12 @@ export default class {
 
     center.divideScalar(rows * columns);
 
-    this.scale = (Math.abs(u1 - u0) + Math.abs(v1 - v0)) / 2;
-
     return center;
   }
 
-  updateUvs(tiles = this.tiles) {
-    const uvsArray = this.uvs.array;
-    const scaledUvs = this.geometry.getAttribute('uv');
-    const scaledArray = scaledUvs.array;
-
-    for (let i = 0; i < uvsArray.length; i++) {
-      scaledArray[i] = tiles * uvsArray[i];
-    }
-    scaledUvs.needsUpdate = true;
-
-    this.tiles = tiles;
-  }
-
   generate(definition) {
+    super.generate();
+
     let animatable;
     let center;
 
@@ -150,7 +128,6 @@ export default class {
       this.morphNormals = this.geometry.getAttribute('normal').clone();
 
       center = this._computeSurface(definition);
-      this.updateUvs();
 
       animatable = false;
     }
@@ -172,10 +149,14 @@ export default class {
       animatable = true;
     }
 
+    const {u0, u1, v0, v1} = definition;
+    const scale = (Math.abs(u1 - u0) + Math.abs(v1 - v0)) / 2;
+
     this.lastDefinition = definition;
 
     return {
       center,
+      scale,
       animatable
     };
   }

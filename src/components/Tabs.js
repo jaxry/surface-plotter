@@ -20,6 +20,10 @@ export default class {
     );
   }
 
+  _tabClick(id) {
+    return () => this.selectTab(id);
+  }
+
   selectTab(id) {
     const {tab, content, callback} = this.contentById.get(id);
 
@@ -42,7 +46,7 @@ export default class {
 
   add(id, domElement, callback) {
     const tab = createElem('li', {class: 'tab'}, id);
-    tab.addEventListener('click', () => this.selectTab(id));
+    tab.addEventListener('click', this._tabClick(id));
     this.tabList.appendChild(tab);
 
     this.contentById.set(id, {

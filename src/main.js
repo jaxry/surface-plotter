@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import Tweens from './Tweens';
 import ParametricSurface from './ParametricSurface';
+import ImplicitSurface from './ImplicitSurface';
 import OrbitControls from './OrbitControls';
 import EnvironmentLoader from './EnvironmentLoader';
 import MaterialLoader from './MaterialLoader';
 import Tabs from './components/Tabs';
 import ParametricControls from './components/ParametricControls';
+import ImplicitControls from './components/ImplicitControls';
 import GraphicsControls from './components/GraphicsControls';
 import { createElem, buildDomTree, throttleAnimationFrame } from './util';
 
@@ -57,24 +59,44 @@ mesh.receiveShadow = true;
 const orbitControls = new OrbitControls(camera, mesh, canvas);
 orbitControls.onUpdate = render;
 
-const parametricSurface = new ParametricSurface();
 const tweens = new Tweens();
 
-let materialProperties = {};
+let surface;
 
-function setDisplacementScale(surfaceScale, surfaceTiles) {
-  const baseScale = 0.04;
-  const ds = materialProperties.displacementScale || 0;
+const displacementScale = new class {
+  constructor() {
+    this.surfaceScale = 1;
+    this.uvScale = 1;
+    this.initialScale = 1;
+  }
 
-  material.displacementScale = baseScale * surfaceScale * ds / surfaceTiles;
-  material.displacementBias = -0.5 * material.displacementScale;
-  material.needsUpdate = true;
+  update() {
+    const ds = this.surfaceScale * this.initialScale / this.uvScale;
+    material.displacementScale = ds;
+    material.displacementBias = -0.5 * ds;
+    material.needsUpdate = true;
+  }
+};
+
+function initSurface(Surface) {
+  if (surface instanceof Surface) {
+    return;
+  }
+
+  if (surface && surface.geometry) {
+    surface.geometry.dispose();
+  }
+
+  surface = new Surface();
 }
 
 function setParametricGeometry(definition) {
-  const {animatable, center} = parametricSurface.generate(definition);
+  initSurface(ParametricSurface);
 
-  setDisplacementScale(parametricSurface.scale, parametricSurface.tiles);
+  const {animatable, center, scale} = surface.generate(definition);
+
+  displacementScale.surfaceScale = scale;
+  displacementScale.update();
 
   if (animatable) {
     mesh.morphTargetInfluences = [1];
@@ -87,7 +109,15 @@ function setParametricGeometry(definition) {
     .onUpdate(() => orbitControls.update())
     .start();
 
-  mesh.geometry = parametricSurface.geometry;
+  mesh.geometry = surface.geometry;
+}
+
+function setImplicitGeometry(definition) {
+  initSurface(ImplicitSurface);
+
+  surface.generate(definition);
+
+  mesh.geometry = surface.geometry;
 }
 
 function setEnvironment({cubemap, lights}) {
@@ -100,9 +130,29 @@ function setEnvironment({cubemap, lights}) {
   render();
 }
 
-function setMaterialOptions({tiles}) {
-  setDisplacementScale(parametricSurface.scale, tiles);
-  parametricSurface.updateUvs(tiles);
+function setMaterialOptions({uvScale}) {
+  displacementScale.uvScale = uvScale;
+  displacementScale.update();
+
+  surface.uvScale = uvScale;
+  surface.updateUvs();
+
+  material.needsUpdate = true;
+  render();
+}
+
+function setMaterial(properties) {
+  for (let key in properties) {
+    const prop = material[key];
+    if (prop instanceof THREE.Texture) {
+      prop.dispose();
+    }
+  }
+
+  Object.assign(material, properties);
+
+  displacementScale.initialScale = properties.displacementScale;
+  displacementScale.update();
 
   material.needsUpdate = true;
   render();
@@ -114,28 +164,30 @@ const materialLoader = new MaterialLoader('/presets/materials', renderer.getMaxA
 const graphicsControls = new GraphicsControls();
 
 graphicsControls.onEnvironment = name => {
-  environmentLoader.load(name)
-    .then(setEnvironment);
+  environmentLoader.load(name).then(setEnvironment);
 };
 
 graphicsControls.onMaterial = name => {
-  materialLoader.load(name)
-    .then(properties => {
-      materialProperties = properties;
-      Object.assign(material, properties);
-      setMaterialOptions(graphicsControls.materialOptions);
-    });
+  materialLoader.load(name).then(setMaterial);
 };
 
 graphicsControls.onMaterialOptions = setMaterialOptions;
 
 const parametricControls = new ParametricControls();
 parametricControls.onDefinition = setParametricGeometry;
-setParametricGeometry(parametricControls.definition);
+
+const implicitControls = new ImplicitControls();
+implicitControls.onDefinition = setImplicitGeometry;
 
 const surfaceControls = new Tabs();
-surfaceControls.add('Parametric', parametricControls.domElement);
-surfaceControls.add('Implicit', createElem('div', null, '<p>Not implemented</p>'));
+surfaceControls.add('Parametric', parametricControls.domElement, () => {
+  setParametricGeometry(parametricControls.definition);
+  setMaterialOptions(graphicsControls.materialOptions);
+});
+surfaceControls.add('Implicit', implicitControls.domElement, () => {
+  setImplicitGeometry(implicitControls.definition);
+  setMaterialOptions(graphicsControls.materialOptions);
+});
 
 buildDomTree(
   document.getElementById('controls'), [
@@ -146,10 +198,10 @@ buildDomTree(
   ]
 );
 
-window.addEventListener('resize', resize);
-resize();
-
 environmentLoader.init
   .then(names => graphicsControls.addEnvironments(names));
 materialLoader.init
   .then(names => graphicsControls.addMaterials(names));
+
+window.addEventListener('resize', resize);
+resize();
