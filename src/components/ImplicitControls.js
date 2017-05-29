@@ -27,12 +27,14 @@ export default class {
   }
 
   defaultValues() {
-    this.equation.value = 'x*x + y*y + z*z - 1';
+    // this.equation.value = 'x*x + y*y + z*z - 4';
+    // this.equation.value = 'cos(x) + sin(y) + z';
+    this.equation.value = 'cos(x) + sin(y) + sin(z)';
   }
 
   get definition() {
     return {
-      equation: this.equation.value
+      equation: this.equation.function
     };
   }
 }

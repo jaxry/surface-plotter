@@ -30,7 +30,6 @@ export default class {
     this.lastUvScale = this.uvScale;
 
     uv.needsUpdate = true;
-
   }
 
   generate() {

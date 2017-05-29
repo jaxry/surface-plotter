@@ -69,6 +69,10 @@ export function clamp(x, min, max) {
   return Math.min(Math.max(x, min), max);
 }
 
+export function mod(x, n) {
+  return ((x % n) + n) % n;
+}
+
 function limiter(fn, wait, immediate, debounce, timeoutFn, clearTimeoutFn) {
   let timeoutID;
   let lastArguments;

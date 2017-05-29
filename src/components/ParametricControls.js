@@ -90,9 +90,9 @@ export default class {
     return {
       u0: this.uStart.value, u1: this.uEnd.value,
       v0: this.vStart.value, v1: this.vEnd.value,
-      fx: this.fx.equation,
-      fy: this.fy.equation,
-      fz: this.fz.equation,
+      fx: this.fx.function,
+      fy: this.fy.function,
+      fz: this.fz.function,
       rows: rows,
       columns: rows
     };

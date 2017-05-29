@@ -25,7 +25,7 @@ export default class {
 
     this.textarea.addEventListener('input', () => {
       this._eval();
-      onInput(this.equation);
+      onInput(this.function);
     });
 
     this.domElement = buildDomTree(
@@ -38,7 +38,7 @@ export default class {
 
   _eval() {
     try {
-      this.equation = evalEquation(this.equationInputs, this.value);
+      this.function = evalEquation(this.equationInputs, this.value);
       this.textarea.setCustomValidity('');
       this.domElement.title = '';
     }
@@ -46,7 +46,7 @@ export default class {
       this.textarea.setCustomValidity('Invalid equation');
       this.domElement.title = 'Invalid equation';
     }
-    return this.equation;
+    return this.function;
   }
 
   set value(value) {
