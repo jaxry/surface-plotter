@@ -1,7 +1,6 @@
-import { createElem, buildDomTree, debounce, clamp } from '../util';
-import { inputGroup, inputRow } from '../commonElements';
+import { createElem, buildDomTree, debounce } from '../util';
+import { inputGroup } from '../commonElements';
 import EquationInput from './EquationInput';
-import NumberInput from './NumberInput';
 
 export default class {
   constructor() {
@@ -30,6 +29,7 @@ export default class {
     // this.equation.value = 'x*x + y*y + z*z - 4';
     // this.equation.value = 'cos(x) + sin(y) + z';
     this.equation.value = 'cos(x) + sin(y) + sin(z)';
+    // this.equation.value = 'x*cos(z) + y*cos(x) + z*z - 1';
   }
 
   get definition() {

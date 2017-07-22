@@ -1,388 +1,169 @@
-/*
-
- Implicit Surface polygonizer
- Uses front-based propagation as described by Hartmann in:
- Erich Hartmann. 1998. A marching method for the triangulation of surfaces. Visual Computer 14, 2, 95-108
-
- TODO:
- Extend method to use adaptive polygonization as described in:
- Bruno Rodrigues de Araujo and Joaquim Armando Pires Jorge. 2005a. Adaptive polygonization of implicit surfaces. Computers and Graphics 29, 5, 686–696
-
-*/
-
-import * as THREE from 'three';
-import { mod } from './util';
-
-const Vector2 = THREE.Vector2;
-const Vector3 = THREE.Vector3;
-const Box3 = THREE.Box3;
-
 const EPS = 0.0001;
-const TWOPI = 2 * Math.PI;
-
-const temp = new Vector3();
-const projectSteps = 4;
-const stepLength = 0.25;
-const stepLS = stepLength * stepLength;
 
 export default class {
   constructor(pushVertex, pushTriangle) {
     this._pushVertex = pushVertex;
     this._pushTriangle = pushTriangle;
-    this.center = new Vector3(0, 0, 0);
-    this.scale = 7;
-    this._scale2 = this.scale * this.scale;
+    this.center = {x: 0, y: 0, z: 0};
+    this.resolution = 32;
+    this.radius = 5;
+
+    this._edgeTable = [0x0,0x109,0x203,0x30a,0x406,0x50f,0x605,0x70c,0x80c,0x905,0xa0f,0xb06,0xc0a,0xd03,0xe09,0xf00,0x190,0x99,0x393,0x29a,0x596,0x49f,0x795,0x69c,0x99c,0x895,0xb9f,0xa96,0xd9a,0xc93,0xf99,0xe90,0x230,0x339,0x33,0x13a,0x636,0x73f,0x435,0x53c,0xa3c,0xb35,0x83f,0x936,0xe3a,0xf33,0xc39,0xd30,0x3a0,0x2a9,0x1a3,0xaa,0x7a6,0x6af,0x5a5,0x4ac,0xbac,0xaa5,0x9af,0x8a6,0xfaa,0xea3,0xda9,0xca0,0x460,0x569,0x663,0x76a,0x66,0x16f,0x265,0x36c,0xc6c,0xd65,0xe6f,0xf66,0x86a,0x963,0xa69,0xb60,0x5f0,0x4f9,0x7f3,0x6fa,0x1f6,0xff,0x3f5,0x2fc,0xdfc,0xcf5,0xfff,0xef6,0x9fa,0x8f3,0xbf9,0xaf0,0x650,0x759,0x453,0x55a,0x256,0x35f,0x55,0x15c,0xe5c,0xf55,0xc5f,0xd56,0xa5a,0xb53,0x859,0x950,0x7c0,0x6c9,0x5c3,0x4ca,0x3c6,0x2cf,0x1c5,0xcc,0xfcc,0xec5,0xdcf,0xcc6,0xbca,0xac3,0x9c9,0x8c0,0x8c0,0x9c9,0xac3,0xbca,0xcc6,0xdcf,0xec5,0xfcc,0xcc,0x1c5,0x2cf,0x3c6,0x4ca,0x5c3,0x6c9,0x7c0,0x950,0x859,0xb53,0xa5a,0xd56,0xc5f,0xf55,0xe5c,0x15c,0x55,0x35f,0x256,0x55a,0x453,0x759,0x650,0xaf0,0xbf9,0x8f3,0x9fa,0xef6,0xfff,0xcf5,0xdfc,0x2fc,0x3f5,0xff,0x1f6,0x6fa,0x7f3,0x4f9,0x5f0,0xb60,0xa69,0x963,0x86a,0xf66,0xe6f,0xd65,0xc6c,0x36c,0x265,0x16f,0x66,0x76a,0x663,0x569,0x460,0xca0,0xda9,0xea3,0xfaa,0x8a6,0x9af,0xaa5,0xbac,0x4ac,0x5a5,0x6af,0x7a6,0xaa,0x1a3,0x2a9,0x3a0,0xd30,0xc39,0xf33,0xe3a,0x936,0x83f,0xb35,0xa3c,0x53c,0x435,0x73f,0x636,0x13a,0x33,0x339,0x230,0xe90,0xf99,0xc93,0xd9a,0xa96,0xb9f,0x895,0x99c,0x69c,0x795,0x49f,0x596,0x29a,0x393,0x99,0x190,0xf00,0xe09,0xd03,0xc0a,0xb06,0xa0f,0x905,0x80c,0x70c,0x605,0x50f,0x406,0x30a,0x203,0x109,0x0];
+    this._triTable = [[],[0,8,3],[0,1,9],[1,8,3,9,8,1],[1,2,10],[0,8,3,1,2,10],[9,2,10,0,2,9],[2,8,3,2,10,8,10,9,8],[3,11,2],[0,11,2,8,11,0],[1,9,0,2,3,11],[1,11,2,1,9,11,9,8,11],[3,10,1,11,10,3],[0,10,1,0,8,10,8,11,10],[3,9,0,3,11,9,11,10,9],[9,8,10,10,8,11],[4,7,8],[4,3,0,7,3,4],[0,1,9,8,4,7],[4,1,9,4,7,1,7,3,1],[1,2,10,8,4,7],[3,4,7,3,0,4,1,2,10],[9,2,10,9,0,2,8,4,7],[2,10,9,2,9,7,2,7,3,7,9,4],[8,4,7,3,11,2],[11,4,7,11,2,4,2,0,4],[9,0,1,8,4,7,2,3,11],[4,7,11,9,4,11,9,11,2,9,2,1],[3,10,1,3,11,10,7,8,4],[1,11,10,1,4,11,1,0,4,7,11,4],[4,7,8,9,0,11,9,11,10,11,0,3],[4,7,11,4,11,9,9,11,10],[9,5,4],[9,5,4,0,8,3],[0,5,4,1,5,0],[8,5,4,8,3,5,3,1,5],[1,2,10,9,5,4],[3,0,8,1,2,10,4,9,5],[5,2,10,5,4,2,4,0,2],[2,10,5,3,2,5,3,5,4,3,4,8],[9,5,4,2,3,11],[0,11,2,0,8,11,4,9,5],[0,5,4,0,1,5,2,3,11],[2,1,5,2,5,8,2,8,11,4,8,5],[10,3,11,10,1,3,9,5,4],[4,9,5,0,8,1,8,10,1,8,11,10],[5,4,0,5,0,11,5,11,10,11,0,3],[5,4,8,5,8,10,10,8,11],[9,7,8,5,7,9],[9,3,0,9,5,3,5,7,3],[0,7,8,0,1,7,1,5,7],[1,5,3,3,5,7],[9,7,8,9,5,7,10,1,2],[10,1,2,9,5,0,5,3,0,5,7,3],[8,0,2,8,2,5,8,5,7,10,5,2],[2,10,5,2,5,3,3,5,7],[7,9,5,7,8,9,3,11,2],[9,5,7,9,7,2,9,2,0,2,7,11],[2,3,11,0,1,8,1,7,8,1,5,7],[11,2,1,11,1,7,7,1,5],[9,5,8,8,5,7,10,1,3,10,3,11],[5,7,0,5,0,9,7,11,0,1,0,10,11,10,0],[11,10,0,11,0,3,10,5,0,8,0,7,5,7,0],[11,10,5,7,11,5],[10,6,5],[0,8,3,5,10,6],[9,0,1,5,10,6],[1,8,3,1,9,8,5,10,6],[1,6,5,2,6,1],[1,6,5,1,2,6,3,0,8],[9,6,5,9,0,6,0,2,6],[5,9,8,5,8,2,5,2,6,3,2,8],[2,3,11,10,6,5],[11,0,8,11,2,0,10,6,5],[0,1,9,2,3,11,5,10,6],[5,10,6,1,9,2,9,11,2,9,8,11],[6,3,11,6,5,3,5,1,3],[0,8,11,0,11,5,0,5,1,5,11,6],[3,11,6,0,3,6,0,6,5,0,5,9],[6,5,9,6,9,11,11,9,8],[5,10,6,4,7,8],[4,3,0,4,7,3,6,5,10],[1,9,0,5,10,6,8,4,7],[10,6,5,1,9,7,1,7,3,7,9,4],[6,1,2,6,5,1,4,7,8],[1,2,5,5,2,6,3,0,4,3,4,7],[8,4,7,9,0,5,0,6,5,0,2,6],[7,3,9,7,9,4,3,2,9,5,9,6,2,6,9],[3,11,2,7,8,4,10,6,5],[5,10,6,4,7,2,4,2,0,2,7,11],[0,1,9,4,7,8,2,3,11,5,10,6],[9,2,1,9,11,2,9,4,11,7,11,4,5,10,6],[8,4,7,3,11,5,3,5,1,5,11,6],[5,1,11,5,11,6,1,0,11,7,11,4,0,4,11],[0,5,9,0,6,5,0,3,6,11,6,3,8,4,7],[6,5,9,6,9,11,4,7,9,7,11,9],[10,4,9,6,4,10],[4,10,6,4,9,10,0,8,3],[10,0,1,10,6,0,6,4,0],[8,3,1,8,1,6,8,6,4,6,1,10],[1,4,9,1,2,4,2,6,4],[3,0,8,1,2,9,2,4,9,2,6,4],[0,2,4,4,2,6],[8,3,2,8,2,4,4,2,6],[10,4,9,10,6,4,11,2,3],[0,8,2,2,8,11,4,9,10,4,10,6],[3,11,2,0,1,6,0,6,4,6,1,10],[6,4,1,6,1,10,4,8,1,2,1,11,8,11,1],[9,6,4,9,3,6,9,1,3,11,6,3],[8,11,1,8,1,0,11,6,1,9,1,4,6,4,1],[3,11,6,3,6,0,0,6,4],[6,4,8,11,6,8],[7,10,6,7,8,10,8,9,10],[0,7,3,0,10,7,0,9,10,6,7,10],[10,6,7,1,10,7,1,7,8,1,8,0],[10,6,7,10,7,1,1,7,3],[1,2,6,1,6,8,1,8,9,8,6,7],[2,6,9,2,9,1,6,7,9,0,9,3,7,3,9],[7,8,0,7,0,6,6,0,2],[7,3,2,6,7,2],[2,3,11,10,6,8,10,8,9,8,6,7],[2,0,7,2,7,11,0,9,7,6,7,10,9,10,7],[1,8,0,1,7,8,1,10,7,6,7,10,2,3,11],[11,2,1,11,1,7,10,6,1,6,7,1],[8,9,6,8,6,7,9,1,6,11,6,3,1,3,6],[0,9,1,11,6,7],[7,8,0,7,0,6,3,11,0,11,6,0],[7,11,6],[7,6,11],[3,0,8,11,7,6],[0,1,9,11,7,6],[8,1,9,8,3,1,11,7,6],[10,1,2,6,11,7],[1,2,10,3,0,8,6,11,7],[2,9,0,2,10,9,6,11,7],[6,11,7,2,10,3,10,8,3,10,9,8],[7,2,3,6,2,7],[7,0,8,7,6,0,6,2,0],[2,7,6,2,3,7,0,1,9],[1,6,2,1,8,6,1,9,8,8,7,6],[10,7,6,10,1,7,1,3,7],[10,7,6,1,7,10,1,8,7,1,0,8],[0,3,7,0,7,10,0,10,9,6,10,7],[7,6,10,7,10,8,8,10,9],[6,8,4,11,8,6],[3,6,11,3,0,6,0,4,6],[8,6,11,8,4,6,9,0,1],[9,4,6,9,6,3,9,3,1,11,3,6],[6,8,4,6,11,8,2,10,1],[1,2,10,3,0,11,0,6,11,0,4,6],[4,11,8,4,6,11,0,2,9,2,10,9],[10,9,3,10,3,2,9,4,3,11,3,6,4,6,3],[8,2,3,8,4,2,4,6,2],[0,4,2,4,6,2],[1,9,0,2,3,4,2,4,6,4,3,8],[1,9,4,1,4,2,2,4,6],[8,1,3,8,6,1,8,4,6,6,10,1],[10,1,0,10,0,6,6,0,4],[4,6,3,4,3,8,6,10,3,0,3,9,10,9,3],[10,9,4,6,10,4],[4,9,5,7,6,11],[0,8,3,4,9,5,11,7,6],[5,0,1,5,4,0,7,6,11],[11,7,6,8,3,4,3,5,4,3,1,5],[9,5,4,10,1,2,7,6,11],[6,11,7,1,2,10,0,8,3,4,9,5],[7,6,11,5,4,10,4,2,10,4,0,2],[3,4,8,3,5,4,3,2,5,10,5,2,11,7,6],[7,2,3,7,6,2,5,4,9],[9,5,4,0,8,6,0,6,2,6,8,7],[3,6,2,3,7,6,1,5,0,5,4,0],[6,2,8,6,8,7,2,1,8,4,8,5,1,5,8],[9,5,4,10,1,6,1,7,6,1,3,7],[1,6,10,1,7,6,1,0,7,8,7,0,9,5,4],[4,0,10,4,10,5,0,3,10,6,10,7,3,7,10],[7,6,10,7,10,8,5,4,10,4,8,10],[6,9,5,6,11,9,11,8,9],[3,6,11,0,6,3,0,5,6,0,9,5],[0,11,8,0,5,11,0,1,5,5,6,11],[6,11,3,6,3,5,5,3,1],[1,2,10,9,5,11,9,11,8,11,5,6],[0,11,3,0,6,11,0,9,6,5,6,9,1,2,10],[11,8,5,11,5,6,8,0,5,10,5,2,0,2,5],[6,11,3,6,3,5,2,10,3,10,5,3],[5,8,9,5,2,8,5,6,2,3,8,2],[9,5,6,9,6,0,0,6,2],[1,5,8,1,8,0,5,6,8,3,8,2,6,2,8],[1,5,6,2,1,6],[1,3,6,1,6,10,3,8,6,5,6,9,8,9,6],[10,1,0,10,0,6,9,5,0,5,6,0],[0,3,8,5,6,10],[10,5,6],[11,5,10,7,5,11],[11,5,10,11,7,5,8,3,0],[5,11,7,5,10,11,1,9,0],[10,7,5,10,11,7,9,8,1,8,3,1],[11,1,2,11,7,1,7,5,1],[0,8,3,1,2,7,1,7,5,7,2,11],[9,7,5,9,2,7,9,0,2,2,11,7],[7,5,2,7,2,11,5,9,2,3,2,8,9,8,2],[2,5,10,2,3,5,3,7,5],[8,2,0,8,5,2,8,7,5,10,2,5],[9,0,1,5,10,3,5,3,7,3,10,2],[9,8,2,9,2,1,8,7,2,10,2,5,7,5,2],[1,3,5,3,7,5],[0,8,7,0,7,1,1,7,5],[9,0,3,9,3,5,5,3,7],[9,8,7,5,9,7],[5,8,4,5,10,8,10,11,8],[5,0,4,5,11,0,5,10,11,11,3,0],[0,1,9,8,4,10,8,10,11,10,4,5],[10,11,4,10,4,5,11,3,4,9,4,1,3,1,4],[2,5,1,2,8,5,2,11,8,4,5,8],[0,4,11,0,11,3,4,5,11,2,11,1,5,1,11],[0,2,5,0,5,9,2,11,5,4,5,8,11,8,5],[9,4,5,2,11,3],[2,5,10,3,5,2,3,4,5,3,8,4],[5,10,2,5,2,4,4,2,0],[3,10,2,3,5,10,3,8,5,4,5,8,0,1,9],[5,10,2,5,2,4,1,9,2,9,4,2],[8,4,5,8,5,3,3,5,1],[0,4,5,1,0,5],[8,4,5,8,5,3,9,0,5,0,3,5],[9,4,5],[4,11,7,4,9,11,9,10,11],[0,8,3,4,9,7,9,11,7,9,10,11],[1,10,11,1,11,4,1,4,0,7,4,11],[3,1,4,3,4,8,1,10,4,7,4,11,10,11,4],[4,11,7,9,11,4,9,2,11,9,1,2],[9,7,4,9,11,7,9,1,11,2,11,1,0,8,3],[11,7,4,11,4,2,2,4,0],[11,7,4,11,4,2,8,3,4,3,2,4],[2,9,10,2,7,9,2,3,7,7,4,9],[9,10,7,9,7,4,10,2,7,8,7,0,2,0,7],[3,7,10,3,10,2,7,4,10,1,10,0,4,0,10],[1,10,2,8,7,4],[4,9,1,4,1,7,7,1,3],[4,9,1,4,1,7,0,8,1,8,7,1],[4,0,3,7,4,3],[4,8,7],[9,10,8,10,11,8],[3,0,9,3,9,11,11,9,10],[0,1,10,0,10,8,8,10,11],[3,1,10,11,3,10],[1,2,11,1,11,9,9,11,8],[3,0,9,3,9,11,1,2,9,2,11,9],[0,2,11,8,0,11],[3,2,11],[2,3,8,2,8,10,10,8,9],[9,10,2,0,9,2],[2,3,8,2,8,10,0,1,8,1,10,8],[1,10,2],[1,3,8,9,1,8],[0,9,1],[0,3,8],[]];
   }
-
-  _grad(out, p, fp) {
-    out.x = (this.eq(p.x + EPS, p.y, p.z) - fp) / EPS;
-    out.y = (this.eq(p.x, p.y + EPS, p.z) - fp) / EPS;
-    out.z = (this.eq(p.x, p.y, p.z + EPS) - fp) / EPS;
-
-    return out;
-  }
-
-  _surfacePoint(p, iters) {
-    let fp, g2;
-
-    for(let i = 0; i < iters; i++) {
-      fp = this.eq(p.x, p.y, p.z);
-      this._grad(temp, p, fp);
-      g2 = temp.lengthSq();
-      p.addScaledVector(temp, -fp / g2);
-    }
-
-    return p;
-  }
-
-  _getNormal(p) {
-    return this._grad(new Vector3(), p, this.eq(p.x, p.y, p.z)).normalize();
-  }
-
-  _getBasis(p) {
-    const n = this._getNormal(p);
-
-    const t1 = n.x > 0.5 || n.y > 0.5 ?
-      new Vector3(n.y, -n.x, 0).normalize() :
-      new Vector3(-n.z, 0, n.x).normalize();
-
-    const t2 = new Vector3().crossVectors(n, t1);
-
+  _normal(eq, p) {
+    const fp = eq(p.x, p.y, p.z);
+    const x = (eq(p.x + EPS, p.y, p.z) - fp) / EPS;
+    const y = (eq(p.x, p.y + EPS, p.z) - fp) / EPS;
+    const z = (eq(p.x, p.y, p.z + EPS) - fp) / EPS;
+    const l = Math.sqrt(x * x + y * y + z * z);
     return {
-      n, t1, t2
+      x: x / l,
+      y: y / l,
+      z: z / l
     };
   }
 
-  _createFrontPoint(position) {
-    const l2 = position.distanceToSquared(this.center);
+  _surfacePoint(eq, p1, p2, v1, v2) {
+    // if (Math.abs(v1) < 0.00001) {
+    //   console.log('v1 is zero');
+    //   return p1;
+    // }
+    // if (Math.abs(v2) < 0.00001) {
+    //   console.log('v2 is zero');
+    //   return p2;
+    // }
+    // if (Math.abs(v1 - v2) < 0.00001) {
+    //   console.log('both zero');
+    //   return p1;
+    // }
 
-    if (l2 > this._scale2) {
-      position.multiplyScalar(this.scale / Math.sqrt(l2));
+    // linear interpolation
 
-      return {
-        index: this._pushVertex(position, this._getNormal(position)),
-        position,
-        border: true
-      };
+    // const mu = -v1 / (v2 - v1);
+
+    // return {
+    //   x: p1[0] + mu * (p2[0] - p1[0]),
+    //   y: p1[1] + mu * (p2[1] - p1[1]),
+    //   z: p1[2] + mu * (p2[2] - p1[2])
+    // };
+
+    // binary search
+
+    let pos, neg;
+    if (v1 < 0) {
+      neg = [...p1];
+      pos = [...p2];
+    }
+    else {
+      neg = [...p2];
+      pos = [...p1];
     }
 
-    const basis = this._getBasis(position);
+    let mx, my, mz;
+
+    for (let i = 0; i < 10; i++) {
+      mx = (neg[0] + pos[0]) / 2;
+      my = (neg[1] + pos[1]) / 2;
+      mz = (neg[2] + pos[2]) / 2;
+      const vm = eq(mx, my, mz);
+      if (vm > 0) {
+        pos[0] = mx; pos[1] = my; pos[2] = mz;
+      }
+      else {
+        neg[0] = mx; neg[1] = my; neg[2] = mz;
+      }
+    }
+
+    // const l2 = mx * mx + my * my + mz * mz;
+    // if (l2 > this.radius * this.radius) {
+    //   const l = Math.sqrt(l2);
+    //   mx = this.radius * mx / l;
+    //   my = this.radius * my / l;
+    //   mz = this.radius * mz / l;
+    // }
 
     return {
-      index: this._pushVertex(position, basis.n),
-      position,
-      basis,
-      angle: 0,
-      baseAngle: 0,
-      updateAngle: true,
-      rotationOrigin: new Vector2(),
-      distanceCheck: true
+      x: mx,
+      y: my,
+      z: mz
     };
-  }
 
-  _initSeed(front) {
-    const seed = this._surfacePoint(new THREE.Vector3(1, 1, 1), 10);
-    const seedBasis = this._getBasis(seed);
-    this._pushVertex(seed, seedBasis.n);
-
-    for(let i = 0; i < 6; i++) {
-      const p = seed.clone()
-        .addScaledVector(seedBasis.t1, stepLength * Math.cos(i * Math.PI / 3))
-        .addScaledVector(seedBasis.t2, stepLength * Math.sin(i * Math.PI / 3));
-
-      this._surfacePoint(p, projectSteps);
-
-      front.push(this._createFrontPoint(p));
-    }
-
-    for (let i = 0; i < front.length; i++) {
-      this._pushTriangle(0, front[mod(i - 1, front.length)].index, front[i].index);
-    }
-  }
-
-  _calcAngle(front, index) {
-    const frontPoint = front[index];
-    const leftNeighbor = front[mod(index - 1, front.length)];
-    const rightNeighbor = front[mod(index + 1, front.length)];
-
-    const {t1, t2} = frontPoint.basis;
-    const rotationOrigin = frontPoint.rotationOrigin;
-
-    temp.subVectors(leftNeighbor.position, frontPoint.position);
-    rotationOrigin.set(t1.dot(temp), t2.dot(temp));
-    const w1 = Math.atan2(rotationOrigin.y, rotationOrigin.x);
-
-    temp.subVectors(rightNeighbor.position, frontPoint.position);
-    const w2 = Math.atan2(t2.dot(temp), t1.dot(temp));
-
-    const w = mod(w2 - w1, TWOPI);
-
-    frontPoint.angle = w;
-    frontPoint.baseAngle = w1;
-    frontPoint.updateAngle = false;
-
-    return w;
-  }
-
-  _expandFront(front, index) {
-    const frontPoint = front[index];
-    const leftNeighbor = front[mod(index - 1, front.length)];
-    const rightNeighbor = front[mod(index + 1, front.length)];
-
-    const angle = frontPoint.angle;
-
-    let numTriangles = Math.floor(3 * frontPoint.angle / Math.PI) + 1;
-    let rotation = angle / numTriangles;
-
-    if (rotation < 0.8 && numTriangles > 1) {
-      rotation = angle / --numTriangles;
-    }
-    else if (numTriangles === 1 && rotation > 0.8 && leftNeighbor.position.distanceToSquared(rightNeighbor.position) > stepLS * 1.44) {
-      numTriangles = 2;
-      rotation /= 2;
-    }
-    else if (angle < 3 && (leftNeighbor.position.distanceToSquared(frontPoint.position) <= 0.25 * stepLS || rightNeighbor.position.distanceToSquared(frontPoint.position) <= 0.25 * stepLS) ) {
-      numTriangles = 1;
-    }
-
-    leftNeighbor.updateAngle = true;
-    rightNeighbor.updateAngle = true;
-
-    if (numTriangles === 1) {
-      this._pushTriangle(leftNeighbor.index, rightNeighbor.index, frontPoint.index);
-      front.splice(index, 1);
-      return;
-    }
-
-    const points = [];
-
-    frontPoint.rotationOrigin.normalize();
-
-    for (let i = 1; i < numTriangles; i++) {
-      const c = Math.cos(rotation * i);
-      const s = Math.sin(rotation * i);
-      const x = c * frontPoint.rotationOrigin.x - s * frontPoint.rotationOrigin.y;
-      const y = s * frontPoint.rotationOrigin.x + c * frontPoint.rotationOrigin.y;
-
-      const position = new THREE.Vector3()
-        .addScaledVector(frontPoint.basis.t1, stepLength * x)
-        .addScaledVector(frontPoint.basis.t2, stepLength * y)
-        .add(frontPoint.position);
-
-      this._surfacePoint(position, projectSteps);
-
-      const f = this._createFrontPoint(position);
-
-      if (i === 1) {
-        this._pushTriangle(leftNeighbor.index, f.index, frontPoint.index);
-      }
-      if (i === numTriangles - 1) {
-        this._pushTriangle(f.index, rightNeighbor.index, frontPoint.index);
-      }
-      else {
-        this._pushTriangle(f.index, f.index + 1, frontPoint.index);
-      }
-
-      points.push(f);
-    }
-
-    front.splice(index, 1, ...points);
-  }
-
-  _intrafrontCollisions(fronts, front, index) {
-    const f = front[index];
-
-    for (let i = 0; i < front.length - 5; i++) {
-      const targetIndex = mod(i + index + 3, front.length);
-      const target = front[targetIndex];
-
-      if (target.border || target.position.distanceToSquared(f.position) > stepLS) {
-        continue;
-      }
-
-      temp.subVectors(target.position, f.position);
-      const wt = Math.atan2(f.basis.t2.dot(temp), f.basis.t1.dot(temp));
-      const w = mod(wt - f.baseAngle, TWOPI);
-
-      if (w > f.angle) {
-        continue; // point on target front is not visible to point on active front
-      }
-
-      f.updateAngle = true;
-      target.updateAngle = true;
-
-      let newFront;
-
-      if (targetIndex < index) {
-        newFront = front.splice(targetIndex + 1, index - targetIndex - 1);
-        newFront.unshift(Object.assign({} , target));
-        newFront.push(Object.assign({}, f));
-      }
-      else {
-        newFront = front.splice(index + 1, targetIndex - index - 1);
-        newFront.unshift(Object.assign({} , f));
-        newFront.push(Object.assign({}, target));
-      }
-
-      if (this._calcAngle(newFront, 0) < this._calcAngle(newFront, newFront.length - 1)) {
-        this._expandFront(newFront, 0);
-        this._calcAngle(newFront, newFront.length - 1);
-        this._expandFront(newFront, newFront.length - 1);
-      }
-      else {
-        this._expandFront(newFront, newFront.length - 1);
-        this._calcAngle(newFront, 0);
-        this._expandFront(newFront, 0);
-      }
-
-      const newFrontBox = new Box3();
-
-      for (let nf of newFront) {
-        newFrontBox.expandByPoint(nf.position);
-      }
-
-      newFrontBox.expandByScalar(stepLength);
-
-      fronts.push({
-        front: newFront,
-        box: newFrontBox
-      });
-
-      return true;
-    }
-  }
-
-  _interfrontCollisions(fronts, front, index) {
-    const f = front[index];
-
-    for (let i = 0; i < fronts.length; i++) {
-      const {front: targetFront, box: targetBox} = fronts[i];
-
-      if (!targetBox.containsPoint(f.position)) {
-        continue;
-      }
-
-      for (let j = 0; j < targetFront.length; j++) {
-        const target = targetFront[j];
-
-        if (target.border || targetFront[j].position.distanceToSquared(f.position) > stepLS || target.basis.n.dot(f.basis.n) < 0) {
-          continue;
-        }
-
-        temp.subVectors(target.position, f.position);
-        const wt = Math.atan2(f.basis.t2.dot(temp), f.basis.t1.dot(temp));
-        const w = mod(wt - f.baseAngle, TWOPI);
-
-        if (w > f.angle) {
-          continue; // point on target front is not visible to point on active front
-        }
-
-        const frontHalf = front.splice(index + 1);
-
-        front.push(target, targetFront[mod(j + 1, targetFront.length)]);
-
-        if (this._calcAngle(front, index) < this._calcAngle(front, front.length - 2)) {
-          this._expandFront(front, index);
-          this._calcAngle(front, front.length - 2);
-          this._expandFront(front, front.length - 2);
-        }
-        else {
-          this._expandFront(front, front.length - 2);
-          this._calcAngle(front, index);
-          this._expandFront(front, index);
-        }
-
-        for (let k = 2; k <= targetFront.length; k++) {
-          front.push(targetFront[mod(j + k, targetFront.length)]);
-        }
-
-        front.push(f, ...frontHalf);
-
-        f.updateAngle = true;
-        target.updateAngle = true;
-
-        fronts.splice(i, 1);
-
-        return true;
-      }
-    }
   }
 
   triangulate(equation) {
-    console.time('polygonize');
+    const step = 2 * this.radius / this.resolution;
+    const hs = step / 2;
+    const radius2 = this.radius * this.radius;
 
-    this.eq = equation;
+    const vertList = [];
 
-    const fronts = [];
-    let front = []; // the active front
+    for (let z = -this.radius; z <= this.radius; z += step) {
+      for (let y = -this.radius; y <= this.radius; y += step) {
+        for (let x = -this.radius; x <= this.radius; x += step) {
 
-    this._initSeed(front);
+          // if (x * x + y * y + z * z > radius2) {
+          //   continue;
+          // }
 
-    let iter = 0;
-    let minFront;
-    let minFrontIndex;
+          const p0 = [x - hs, y + hs, z - hs];
+          const p1 = [x + hs, y + hs, z - hs];
+          const p2 = [x + hs, y - hs, z - hs];
+          const p3 = [x - hs, y - hs, z - hs];
+          const p4 = [x - hs, y + hs, z + hs];
+          const p5 = [x + hs, y + hs, z + hs];
+          const p6 = [x + hs, y - hs, z + hs];
+          const p7 = [x - hs, y - hs, z + hs];
 
-    do {
-      minFront = null;
+          const v0 = equation(...p0);
+          const v1 = equation(...p1);
+          const v2 = equation(...p2);
+          const v3 = equation(...p3);
+          const v4 = equation(...p4);
+          const v5 = equation(...p5);
+          const v6 = equation(...p6);
+          const v7 = equation(...p7);
 
-      for (let i = 0; i < front.length; i++) {
-        const f = front[i];
+          let cubeIndex = 0;
 
-        if (f.border) {
-          continue;
-        }
+          if (v0 < 0) cubeIndex |= 1;
+          if (v1 < 0) cubeIndex |= 2;
+          if (v2 < 0) cubeIndex |= 4;
+          if (v3 < 0) cubeIndex |= 8;
+          if (v4 < 0) cubeIndex |= 16;
+          if (v5 < 0) cubeIndex |= 32;
+          if (v6 < 0) cubeIndex |= 64;
+          if (v7 < 0) cubeIndex |= 128;
 
-        if (!minFront) {
-          minFrontIndex = i;
-          minFront = f;
-        }
+          const edges = this._edgeTable[cubeIndex];
 
-        if (f.updateAngle) {
-          this._calcAngle(front, i);
-        }
+          if (edges & 1) vertList[0] = this._surfacePoint(equation, p0, p1, v0, v1);
+          if (edges & 2) vertList[1] = this._surfacePoint(equation, p1, p2, v1, v2);
+          if (edges & 4) vertList[2] = this._surfacePoint(equation, p2, p3, v2, v3);
+          if (edges & 8) vertList[3] = this._surfacePoint(equation, p3, p0, v3, v0);
+          if (edges & 16) vertList[4] = this._surfacePoint(equation, p4, p5, v4, v5);
+          if (edges & 32) vertList[5] = this._surfacePoint(equation, p5, p6, v5, v6);
+          if (edges & 64) vertList[6] = this._surfacePoint(equation, p6, p7, v6, v7);
+          if (edges & 128) vertList[7] = this._surfacePoint(equation, p7, p4, v7, v4);
+          if (edges & 256) vertList[8] = this._surfacePoint(equation, p0, p4, v0, v4);
+          if (edges & 512) vertList[9] = this._surfacePoint(equation, p1, p5, v1, v5);
+          if (edges & 1024) vertList[10] = this._surfacePoint(equation, p2, p6, v2, v6);
+          if (edges & 2048) vertList[11] = this._surfacePoint(equation, p3, p7, v3, v7);
 
-        if (f.angle < minFront.angle) {
-          minFrontIndex = i;
-          minFront = f;
+          const tri = this._triTable[cubeIndex];
+
+          for (let i = 0; i < tri.length; i += 3) {
+            const vert0 = vertList[tri[i]];
+            const vert1 = vertList[tri[i + 1]];
+            const vert2 = vertList[tri[i + 2]];
+
+            const index0 = this._pushVertex(vert0, this._normal(equation, vert0));
+            const index1 = this._pushVertex(vert1, this._normal(equation, vert1));
+            const index2 = this._pushVertex(vert2, this._normal(equation, vert2));
+            this._pushTriangle(index0, index1, index2);
+          }
         }
       }
-
-      if (minFront) {
-        const collides = this._intrafrontCollisions(fronts, front, minFrontIndex) ||
-          this._interfrontCollisions(fronts, front, minFrontIndex);
-
-        if (!collides) {
-          this._expandFront(front, minFrontIndex);
-        }
-      }
-      else {
-        const newFront = fronts.pop();
-        front = newFront && newFront.front;
-      }
-
-    } while (front && iter++ < 32000);
-
-    console.timeEnd('polygonize');
-    console.log(iter);
+    }
   }
 }

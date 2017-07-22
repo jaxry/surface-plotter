@@ -1,4 +1,4 @@
-import { createElem, buildDomTree, debounce } from '../util';
+import { createElem, buildDomTree } from '../util';
 import { inputGroup, inputRow } from '../commonElements';
 import SelectInput from './SelectInput';
 import NumberInput from './NumberInput';
