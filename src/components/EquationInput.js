@@ -1,6 +1,6 @@
 import { createElem, buildDomTree } from '../util';
 
-function evalEquation(inputs, equation) {
+function functionFromEquation(inputs, equation) {
   const eq = new Function(`
     const ${
       Object.getOwnPropertyNames(Math)
@@ -38,7 +38,7 @@ export default class {
 
   _eval() {
     try {
-      this.function = evalEquation(this.equationInputs, this.value);
+      this.function = functionFromEquation(this.equationInputs, this.value);
       this.textarea.setCustomValidity('');
       this.domElement.title = '';
     }

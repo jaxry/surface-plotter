@@ -2,7 +2,6 @@ export default class {
   constructor() {
     this.geometry;
     this.uvScale = 1;
-    this.lastUvScale = 1;
   }
 
   _newGeometry(vertexCount) {
@@ -19,21 +18,20 @@ export default class {
     this.geometry.addAttribute('uv2', uvs);
   }
 
-  updateUvs() {
+  updateUvs(uvScale) {
     const uv = this.geometry.getAttribute('uv');
     const uvArray = uv.array;
 
     for (let i = 0; i < uvArray.length; i++) {
-      uvArray[i] = this.uvScale * uvArray[i] / this.lastUvScale;
+      uvArray[i] *= uvScale / this.uvScale;
     }
 
-    this.lastUvScale = this.uvScale;
-
     uv.needsUpdate = true;
+
+    this.uvScale = uvScale;
   }
 
   generate() {
-    this.lastUvScale = this.uvScale;
+    // override in child class
   }
-
 }

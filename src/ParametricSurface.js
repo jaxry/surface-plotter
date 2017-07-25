@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Surface from './Surface';
 
-const eps = 0.00001;
+const EPS = 0.00001;
 
 export default class extends Surface {
   constructor() {
@@ -12,9 +12,7 @@ export default class extends Surface {
   }
 
   _newGeometry(rows, columns) {
-    const vertexCount = rows * columns;
-
-    super._newGeometry(vertexCount);
+    super._newGeometry(rows * columns);
 
     const tileRows = rows - 1;
     const tileColumns = columns - 1;
@@ -77,21 +75,21 @@ export default class extends Surface {
         f.set(fx(u, v), fy(u, v), fz(u, v));
 
         // approximate tangent vectors via finite differences
-        let offset = u - eps;
+        let offset = u - EPS;
         if (offset >= u0) {
           ru.subVectors(f, tempv.set(fx(offset, v), fy(offset, v), fz(offset, v)));
         }
         else {
-          offset = u + eps;
+          offset = u + EPS;
           ru.subVectors(tempv.set(fx(offset, v), fy(offset, v), fz(offset, v)), f);
         }
 
-        offset = v - eps;
+        offset = v - EPS;
         if (offset >= v0) {
           rv.subVectors(f, tempv.set(fx(u, offset), fy(u, offset), fz(u, offset)));
         }
         else {
-          offset = v + eps;
+          offset = v + EPS;
           rv.subVectors(tempv.set(fx(u, offset), fy(u, offset), fz(u, offset)), f);
         }
 

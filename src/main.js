@@ -42,13 +42,17 @@ function resize() {
 }
 
 const material = new THREE.MeshPhysicalMaterial({
-  color: 0xffffff,
-  roughness: 0.5,
+  color: 0x777777,
+  roughness: 0.3,
   metalness: 0,
   morphTargets: true,
   morphNormals: true,
   side: THREE.DoubleSide
 });
+
+// const material = new THREE.MeshNormalMaterial({
+//   wireframe: true,
+// });
 
 const mesh = new THREE.Mesh();
 mesh.material = material;
@@ -92,6 +96,8 @@ function initSurface(Surface) {
 
 function setParametricGeometry(definition) {
   initSurface(ParametricSurface);
+  orbitControls.onPan = null;
+  orbitControls.onScale = null;
 
   const {animatable, center, scale} = surface.generate(definition);
 
@@ -115,9 +121,17 @@ function setParametricGeometry(definition) {
 function setImplicitGeometry(definition) {
   initSurface(ImplicitSurface);
 
-  surface.generate(definition);
+  const generate = () => {
+    surface.generate(definition, orbitControls.center, orbitControls.radius);
+    mesh.geometry = surface.geometry;
+  };
 
-  mesh.geometry = surface.geometry;
+  orbitControls.onPan = throttleAnimationFrame(generate);
+  orbitControls.onScale = throttleAnimationFrame(generate);
+
+  generate();
+
+  render();
 }
 
 function setEnvironment({cubemap, lights}) {
@@ -134,8 +148,7 @@ function setMaterialOptions({uvScale}) {
   displacementScale.uvScale = uvScale;
   displacementScale.update();
 
-  surface.uvScale = uvScale;
-  surface.updateUvs();
+  surface.updateUvs(uvScale);
 
   material.needsUpdate = true;
   render();
@@ -180,12 +193,12 @@ const implicitControls = new ImplicitControls();
 implicitControls.onDefinition = setImplicitGeometry;
 
 const surfaceControls = new Tabs();
-surfaceControls.add('Parametric', parametricControls.domElement, () => {
-  setParametricGeometry(parametricControls.definition);
-  setMaterialOptions(graphicsControls.materialOptions);
-});
 surfaceControls.add('Implicit', implicitControls.domElement, () => {
   setImplicitGeometry(implicitControls.definition);
+  setMaterialOptions(graphicsControls.materialOptions);
+});
+surfaceControls.add('Parametric', parametricControls.domElement, () => {
+  setParametricGeometry(parametricControls.definition);
   setMaterialOptions(graphicsControls.materialOptions);
 });
 
@@ -198,10 +211,8 @@ buildDomTree(
   ]
 );
 
-environmentLoader.init
-  .then(names => graphicsControls.addEnvironments(names));
-materialLoader.init
-  .then(names => graphicsControls.addMaterials(names));
+environmentLoader.init.then(names => graphicsControls.addEnvironments(names));
+materialLoader.init.then(names => graphicsControls.addMaterials(names));
 
 window.addEventListener('resize', resize);
 resize();

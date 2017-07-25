@@ -1,34 +1,25 @@
 import * as THREE from 'three';
 import Surface from './Surface';
-import Polygonizer from './Polygonizer.js';
+import Polygonizer from './Polygonizer';
 
 export default class extends Surface {
   constructor() {
     super();
     this.vertexIndex = 0;
     this.triangleIndex = 0;
+    this._newGeometry();
   }
 
   _newGeometry() {
     super._newGeometry(65535);
     const indices = new Uint32Array(65535);
     this.geometry.setIndex(new THREE.BufferAttribute(indices, 1));
-  }
-
-  generate(definition) {
-    this._newGeometry();
-
-
-
 
     const positions = this.geometry.getAttribute('position').array;
     const normals = this.geometry.getAttribute('normal').array;
-    const indices = this.geometry.getIndex().array;
-
-    let vertexIndex = 0;
 
     const pushVertex = (position, normal) => {
-      const aIndex = vertexIndex * 3;
+      const aIndex = this.vertexIndex * 3;
 
       positions[aIndex + 0] = position.x;
       positions[aIndex + 1] = position.y;
@@ -37,23 +28,30 @@ export default class extends Surface {
       normals[aIndex + 1] = normal.y;
       normals[aIndex + 2] = normal.z;
 
-      return vertexIndex++;
+      return this.vertexIndex++;
     };
-
-    let triangleIndex = 0;
 
     const pushTriangle = (v1, v2, v3) => {
-      indices[triangleIndex++] = v1;
-      indices[triangleIndex++] = v2;
-      indices[triangleIndex++] = v3;
+      indices[this.triangleIndex++] = v1;
+      indices[this.triangleIndex++] = v2;
+      indices[this.triangleIndex++] = v3;
     };
 
+    this.polygonizer = new Polygonizer(pushVertex, pushTriangle);
+  }
 
-    const polygonizer = new Polygonizer(pushVertex, pushTriangle);
+  generate(definition, center, radius) {
+    super.generate();
 
-    console.time('polygonize');
-    polygonizer.triangulate(definition.equation);
-    // this.geometry.computeVertexNormals();
-    console.timeEnd('polygonize');
+    this.vertexIndex = 0;
+    this.triangleIndex = 0;
+    this.polygonizer.center = center;
+    this.polygonizer.radius = radius / 2;
+    this.polygonizer.triangulate(definition.equation);
+
+    this.geometry.getAttribute('position').needsUpdate = true;
+    this.geometry.getAttribute('normal').needsUpdate = true;
+    this.geometry.getIndex().needsUpdate = true;
+    this.geometry.setDrawRange(0, this.triangleIndex);
   }
 }

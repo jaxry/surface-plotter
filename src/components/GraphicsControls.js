@@ -15,7 +15,7 @@ export default class {
       }
     };
 
-    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 1});
+    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 1, max: 10});
     this.uvScale.domElement.title = 'The higher the scale, the smaller the texture.';
     this.uvScale.value = 3;
 

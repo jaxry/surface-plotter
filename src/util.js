@@ -16,7 +16,7 @@ export function request(url, responseType = "text") {
   });
 }
 
-export function detachableEvents(events) {
+export function detachableEvents(...events) {
   const removeEvents = [];
   for (let e of events) {
     e.element.addEventListener(e.type, e.callback);
@@ -37,13 +37,13 @@ export function setAttribs(elem, attribs) {
   }
 }
 
-export function createElem(name, attribs, html) {
+export function createElem(name, attribs, htmlContent) {
   const elem = document.createElement(name);
   if (attribs) {
     setAttribs(elem, attribs);
   }
-  if (html) {
-    elem.innerHTML = html;
+  if (htmlContent) {
+    elem.innerHTML = htmlContent;
   }
 
   return elem;
@@ -52,7 +52,7 @@ export function createElem(name, attribs, html) {
 export function buildDomTree(parent, children) {
   for (let [i, child] of children.entries()) {
     if (child instanceof Array) {
-      buildDomTree(children[i-1], child);
+      buildDomTree(children[i - 1], child);
     }
     else {
       if (!(child instanceof Node)) {
@@ -73,7 +73,7 @@ export function mod(x, n) {
   return ((x % n) + n) % n;
 }
 
-function limiter(fn, wait, immediate, debounce, timeoutFn, clearTimeoutFn) {
+function limiter(fn, waitTime, immediate, debounce, timeoutFn, clearTimeoutFn) {
   let timeoutID;
   let lastArguments;
 
@@ -81,7 +81,7 @@ function limiter(fn, wait, immediate, debounce, timeoutFn, clearTimeoutFn) {
     if (lastArguments) {
       fn.apply(this, lastArguments);
       lastArguments = null;
-      timeoutID = timeoutFn(timeout, wait);
+      timeoutID = timeoutFn(timeout, waitTime);
     }
     else {
       timeoutID = null;
@@ -95,17 +95,17 @@ function limiter(fn, wait, immediate, debounce, timeoutFn, clearTimeoutFn) {
     }
     else if (debounce) {
       clearTimeoutFn(timeoutID);
-      timeoutID = timeoutFn(timeout, wait);
+      timeoutID = timeoutFn(timeout, waitTime);
     }
   };
 }
 
-export function debounce(fn, wait, immediate) {
-  return limiter(fn, wait, immediate, true, setTimeout, clearTimeout);
+export function debounce(fn, waitTime, immediate) {
+  return limiter(fn, waitTime, immediate, true, setTimeout, clearTimeout);
 }
 
-export function throttle(fn, wait) {
-  return limiter(fn, wait, true, false, setTimeout, clearTimeout);
+export function throttle(fn, waitTime) {
+  return limiter(fn, waitTime, true, false, setTimeout, clearTimeout);
 }
 
 export function throttleAnimationFrame(fn) {

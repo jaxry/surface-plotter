@@ -18,22 +18,15 @@ export default class {
     this.rotateSensitivity = 0.0012;
     this.scaleSensitivity = 1.1;
     this._mouseAction;
-    this._detachEvents = detachableEvents([
+    this._detachEvents = detachableEvents(
       {
         element: domElement,
         type: 'mousedown',
         callback: e => {
           this.domElement.requestPointerLock();
-          if (e.which === 1) {
-            this._mouseAction = this._mousePan;
-          }
-          else {
-            this._mouseAction = this._mouseObject;
-          }
-
+          this._mouseAction = e.which === 1 ? this._mousePan : this._mouseObject;
         }
       },
-
       {
         element: window,
         type: 'mouseup',
@@ -56,7 +49,7 @@ export default class {
           this.scale(Math.pow(this.scaleSensitivity, Math.sign(e.deltaY)));
         }
       }
-    ]);
+    );
   }
 
   _mouseRotate(e) {
@@ -86,6 +79,11 @@ export default class {
 
   scale(amount) {
     this.radius *= amount;
+
+    if (this.onScale) {
+      this.onScale();
+    }
+
     this.update();
   }
 
@@ -106,6 +104,10 @@ export default class {
 
     const up = v.set(0, dy * this.radius, 0).applyQuaternion(this.camera.quaternion);
     this.center.add(up);
+
+    if (this.onPan) {
+      this.onPan();
+    }
 
     this.update();
   }
