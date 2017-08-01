@@ -4,14 +4,16 @@ export default class {
     this.uvScale = 1;
   }
 
-  _newGeometry(vertexCount) {
+  _newGeometry(vertexCount = 0, indexCount = 0) {
     if (this.geometry) {
       this.geometry.dispose();
     }
 
     this.geometry = new THREE.BufferGeometry();
+
     this.geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
     this.geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(vertexCount * 3), 3));
+    this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexCount), 1));
 
     const uvs = new THREE.BufferAttribute(new Float32Array(vertexCount * 2), 2);
     this.geometry.addAttribute('uv', uvs);

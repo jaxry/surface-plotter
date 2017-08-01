@@ -65,6 +65,10 @@ export default class {
         const texturePromises = [];
 
         for (let name of definition.textures) {
+          if (!textureProps[name]) {
+            continue;
+          }
+
           const promise = this._loadTexture(`${matPath}/${name}.jpg`);
           promise.then(texture => {
             material[textureProps[name]] = texture;

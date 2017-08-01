@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Tweens from './Tweens';
 import ParametricSurface from './ParametricSurface';
 import ImplicitSurface from './ImplicitSurface';
+import SurfaceMaterial from './SurfaceMaterial';
 import OrbitControls from './OrbitControls';
 import EnvironmentLoader from './EnvironmentLoader';
 import MaterialLoader from './MaterialLoader';
@@ -41,7 +42,7 @@ function resize() {
   render();
 }
 
-const material = new THREE.MeshPhysicalMaterial({
+const material = new SurfaceMaterial({
   color: 0x777777,
   roughness: 0.3,
   metalness: 0,

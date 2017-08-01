@@ -26,9 +26,9 @@ export default class {
   }
 
   defaultValues() {
-    // this.equation.value = 'x*x + y*y + z*z - 4';
+    this.equation.value = 'x*x + y*y + z*z - 1';
     // this.equation.value = 'cos(x) + sin(y) + z';
-    this.equation.value = 'cos(x) + sin(y) + sin(z)';
+    // this.equation.value = 'cos(x) + sin(y) + sin(z)';
     // this.equation.value = 'x*cos(z) + y*cos(x) + z*z - 1';
   }
 

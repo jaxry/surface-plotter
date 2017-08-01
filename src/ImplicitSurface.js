@@ -11,25 +11,19 @@ export default class extends Surface {
   }
 
   _newGeometry() {
-    super._newGeometry(65535);
-    const indices = new Uint32Array(65535);
-    this.geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    super._newGeometry(65535, 65535);
 
-    const positions = this.geometry.getAttribute('position').array;
-    const normals = this.geometry.getAttribute('normal').array;
+    const positions = this.geometry.getAttribute('position');
+    const normals = this.geometry.getAttribute('normal');
 
     const pushVertex = (position, normal) => {
-      const aIndex = this.vertexIndex * 3;
-
-      positions[aIndex + 0] = position.x;
-      positions[aIndex + 1] = position.y;
-      positions[aIndex + 2] = position.z;
-      normals[aIndex + 0] = normal.x;
-      normals[aIndex + 1] = normal.y;
-      normals[aIndex + 2] = normal.z;
+      positions.setXYZ(this.vertexIndex, position.x, position.y, position.z);
+      normals.setXYZ(this.vertexIndex, normal.x, normal.y, normal.z);
 
       return this.vertexIndex++;
     };
+
+    const indices = this.geometry.getIndex().array;
 
     const pushTriangle = (v1, v2, v3) => {
       indices[this.triangleIndex++] = v1;
@@ -45,6 +39,7 @@ export default class extends Surface {
 
     this.vertexIndex = 0;
     this.triangleIndex = 0;
+
     this.polygonizer.center = center;
     this.polygonizer.radius = radius / 2;
     this.polygonizer.triangulate(definition.equation);
@@ -52,6 +47,7 @@ export default class extends Surface {
     this.geometry.getAttribute('position').needsUpdate = true;
     this.geometry.getAttribute('normal').needsUpdate = true;
     this.geometry.getIndex().needsUpdate = true;
+
     this.geometry.setDrawRange(0, this.triangleIndex);
   }
 }

@@ -12,11 +12,12 @@ export default class extends Surface {
   }
 
   _newGeometry(rows, columns) {
-    super._newGeometry(rows * columns);
-
     const tileRows = rows - 1;
     const tileColumns = columns - 1;
-    const indices = new Uint32Array(6 * tileRows * tileColumns);
+
+    super._newGeometry(rows * columns, 6 * tileRows * tileColumns);
+
+    const indices = this.geometry.getIndex().array;
 
     for (let i = 0; i < tileRows; i++) {
       for (let j = 0; j < tileColumns; j++) {
@@ -43,8 +44,6 @@ export default class extends Surface {
         }
       }
     }
-
-    this.geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   }
 
   _computeSurface(definition) {
