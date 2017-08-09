@@ -51,8 +51,6 @@ export default class extends Surface {
 
     const positions =  this.geometry.getAttribute('position');
     const normals =  this.geometry.getAttribute('normal');
-    const uvs = this.geometry.getAttribute('uv');
-    const uvScale = this.uvScale;
 
     const center = new THREE.Vector3();
     const tempv = new THREE.Vector3();
@@ -98,7 +96,6 @@ export default class extends Surface {
         const index = columns * i + j;
         positions.setXYZ(index, f.x, f.y, f.z);
         normals.setXYZ(index, normal.x, normal.y, normal.z);
-        uvs.setXY(index, uvScale * ud, uvScale * vd);
 
         center.add(f);
       }

@@ -43,7 +43,7 @@ function resize() {
 }
 
 const material = new SurfaceMaterial({
-  color: 0x777777,
+  color: 0xffffff,
   roughness: 0.3,
   metalness: 0,
   morphTargets: true,
@@ -148,8 +148,6 @@ function setEnvironment({cubemap, lights}) {
 function setMaterialOptions({uvScale}) {
   displacementScale.uvScale = uvScale;
   displacementScale.update();
-
-  surface.updateUvs(uvScale);
 
   material.needsUpdate = true;
   render();

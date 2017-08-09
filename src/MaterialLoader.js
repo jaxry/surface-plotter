@@ -4,23 +4,11 @@ import { request } from './util';
 const textureProps = {
   albedo: 'map',
   ao: 'aoMap',
-  bump: 'bumpMap',
-  height: 'displacementMap',
+  // height: 'displacementMap',
   metalness: 'metalnessMap',
   normal: 'normalMap',
   roughness: 'roughnessMap'
 };
-
-const baseMaterialProps = {
-  roughness: 0.5,
-  metalness: 0,
-  reflectivity: 0.5,
-  displacementScale: 0.04,
-};
-
-for (let texture of Object.values(textureProps)) {
-  baseMaterialProps[texture] = null;
-}
 
 export default class {
   constructor(basePath, anisotropy) {
@@ -55,14 +43,34 @@ export default class {
     }
 
     const matPath = `${this.basePath}/${name}`;
-    const material = Object.assign({}, baseMaterialProps);
+    const material = {};
+
+    for (let texture of Object.values(textureProps)) {
+      material[texture] = null;
+    }
 
     return request(`${matPath}/material.json`, 'json')
       .then(definition => {
 
-        Object.assign(material, definition.properties);
+        material.roughness = definition.roughness || 0.5;
+        material.metalness = definition.metalness || 0;
 
         const texturePromises = [];
+
+        if (definition.pbr && definition.pbr.length) {
+          const promise = this._loadTexture(`${matPath}/pbr.jpg`);
+
+          promise.then(texture => {
+            for (let name of definition.pbr) {
+              if (!textureProps[name]) {
+                continue;
+              }
+              material[textureProps[name]] = texture;
+            }
+          });
+
+          texturePromises.push(promise);
+        }
 
         for (let name of definition.textures) {
           if (!textureProps[name]) {
