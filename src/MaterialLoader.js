@@ -28,7 +28,7 @@ export default class {
   }
 
   _loadTexture(path) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       const t = new THREE.TextureLoader().load(path, resolve);
       t.wrapS = THREE.RepeatWrapping;
       t.wrapT = THREE.RepeatWrapping;

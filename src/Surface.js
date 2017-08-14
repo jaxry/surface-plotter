@@ -1,7 +1,6 @@
 export default class {
   constructor() {
     this.geometry;
-    this.uvScale = 1;
   }
 
   _newGeometry(vertexCount = 0, indexCount = 0) {

@@ -43,13 +43,11 @@ function resize() {
 }
 
 const material = new SurfaceMaterial({
-  color: 0xffffff,
-  roughness: 0.3,
-  metalness: 0,
   morphTargets: true,
   morphNormals: true,
   side: THREE.DoubleSide
 });
+material.setBuiltinUniform('color', 0xffffff);
 
 // const material = new THREE.MeshNormalMaterial({
 //   wireframe: true,
@@ -76,10 +74,10 @@ const displacementScale = new class {
   }
 
   update() {
-    const ds = this.surfaceScale * this.initialScale / this.uvScale;
-    material.displacementScale = ds;
-    material.displacementBias = -0.5 * ds;
-    material.needsUpdate = true;
+    // const ds = this.surfaceScale * this.initialScale / this.uvScale;
+    // material.displacementScale = ds;
+    // material.displacementBias = -0.5 * ds;
+    // material.needsUpdate = true;
   }
 };
 
@@ -140,7 +138,7 @@ function setEnvironment({cubemap, lights}) {
   scene.add(mesh);
   scene.add(lights);
   scene.background = cubemap;
-  material.envMap = cubemap;
+  material.setBuiltinUniform('envMap', cubemap);
   material.needsUpdate = true;
   render();
 }
@@ -154,14 +152,12 @@ function setMaterialOptions({uvScale}) {
 }
 
 function setMaterial(properties) {
-  for (let key in properties) {
-    const prop = material[key];
-    if (prop instanceof THREE.Texture) {
-      prop.dispose();
+  for (let [prop, value] of Object.entries(properties)) {
+    if (material[prop] instanceof THREE.Texture) {
+      material[prop].dispose();
     }
+    material.setBuiltinUniform(prop, value);
   }
-
-  Object.assign(material, properties);
 
   displacementScale.initialScale = properties.displacementScale;
   displacementScale.update();
@@ -194,11 +190,9 @@ implicitControls.onDefinition = setImplicitGeometry;
 const surfaceControls = new Tabs();
 surfaceControls.add('Implicit', implicitControls.domElement, () => {
   setImplicitGeometry(implicitControls.definition);
-  setMaterialOptions(graphicsControls.materialOptions);
 });
 surfaceControls.add('Parametric', parametricControls.domElement, () => {
   setParametricGeometry(parametricControls.definition);
-  setMaterialOptions(graphicsControls.materialOptions);
 });
 
 buildDomTree(

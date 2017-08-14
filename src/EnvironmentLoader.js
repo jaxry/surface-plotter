@@ -18,12 +18,11 @@ export default class {
   }
 
   _setupLights(lights) {
-
     const group = new THREE.Group();
 
     if (lights.hemisphere) {
       const info = lights.hemisphere;
-      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 4.5));
+      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 4));
     }
 
     if (lights.directional) {
@@ -31,7 +30,7 @@ export default class {
       const nearPlane = 1;
 
       for (let info of lights.directional) {
-        const light = new THREE.DirectionalLight(info.color, info.intensity || 4);
+        const light = new THREE.DirectionalLight(info.color, info.intensity || 2.5);
         light.position.setFromSpherical(new THREE.Spherical(distance + nearPlane, info.lat * Math.PI, info.lon * Math.PI));
         light.updateMatrix();
         if (info.shadow === undefined || info.shadow) {

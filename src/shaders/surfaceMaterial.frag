@@ -27,10 +27,10 @@ varying vec3 vViewPosition;
 // #include <uv_pars_fragment>
 // #include <uv2_pars_fragment>
 #include <map_pars_fragment>
-// #include <alphamap_pars_fragment>
+#include <alphamap_pars_fragment>
 #include <aomap_pars_fragment>
-// #include <lightmap_pars_fragment>
-// #include <emissivemap_pars_fragment>
+#include <lightmap_pars_fragment>
+#include <emissivemap_pars_fragment>
 #include <envmap_pars_fragment>
 #include <fog_pars_fragment>
 #include <bsdfs>
@@ -38,7 +38,7 @@ varying vec3 vViewPosition;
 #include <lights_pars>
 #include <lights_physical_pars_fragment>
 #include <shadowmap_pars_fragment>
-// #include <bumpmap_pars_fragment>
+#include <bumpmap_pars_fragment>
 // #include <normalmap_pars_fragment>
 #ifdef USE_NORMALMAP
 
@@ -70,12 +70,14 @@ varying vec3 vViewPosition;
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
 
-vec4 triplanarBlending(vec2 xPlane, vec2 yPlane, vec2 zPlane, vec3 weights, sampler2D texture) {
+vec4 triplanarBlending( vec2 xPlane, vec2 yPlane, vec2 zPlane, vec3 weights, sampler2D texture ) {
+
 	vec4 xTexel = texture2D( texture, xPlane );
 	vec4 yTexel = texture2D( texture, yPlane );
 	vec4 zTexel = texture2D( texture, zPlane );
 
 	return xTexel * weights.x + yTexel * weights.y + zTexel * weights.z;
+
 }
 
 varying vec3 vObjectPos;
@@ -92,35 +94,35 @@ void main() {
 	#include <logdepthbuf_fragment>
 	#include <normal_flip>
 
-	vec3 blendWeights = abs(vObjectNormal);
-	blendWeights = pow(blendWeights, vec3(50));
+	vec3 blendWeights = abs( vObjectNormal );
+	blendWeights = pow( blendWeights, vec3( 50 ) );
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
-	vec3 orientation = flipNormal * sign(vObjectNormal);
+	vec3 orientation = flipNormal * sign( vObjectNormal );
 
 	vec2 xPlane = vec2( -orientation.x * vObjectPos.z, -vObjectPos.y );
 	vec2 yPlane = vec2( vObjectPos.x, orientation.y * vObjectPos.z );
 	vec2 zPlane = vec2( orientation.z * vObjectPos.x, -vObjectPos.y );
 
 	#if defined USE_AOMAP
-		vec4 texelPbr = triplanarBlending(xPlane, yPlane, zPlane, blendWeights, aoMap);
+		vec4 texelPbr = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, aoMap );
 	#elif defined USE_ROUGHNESSMAP
-		vec4 texelPbr = triplanarBlending(xPlane, yPlane, zPlane, blendWeights, roughnessMap);
+		vec4 texelPbr = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, roughnessMap );
 	#elif defined USE_METALNESSMAP
-		vec4 texelPbr = triplanarBlending(xPlane, yPlane, zPlane, blendWeights, metalnessMap);
+		vec4 texelPbr = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, metalnessMap );
 	#endif
 
 	// #include <map_fragment>
 	#ifdef USE_MAP
 
-		vec4 texelColor = triplanarBlending(xPlane, yPlane, zPlane, blendWeights, map);
+		vec4 texelColor = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, map );
 
 		texelColor = mapTexelToLinear( texelColor );
 		diffuseColor *= texelColor;
 
 	#endif
 	#include <color_fragment>
-	// #include <alphamap_fragment>
+	#include <alphamap_fragment>
 	#include <alphatest_fragment>
 	// #include <roughnessmap_fragment>
 	float roughnessFactor = roughness;
