@@ -36,6 +36,9 @@ export default class extends THREE.ShaderMaterial {
       {
         clearCoat: {value: 0},
         clearCoatRoughness: {value: 0}
+      },
+      {
+        uvScale: {value: 1}
       }
     ]);
   }

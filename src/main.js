@@ -144,8 +144,9 @@ function setEnvironment({cubemap, lights}) {
 }
 
 function setMaterialOptions({uvScale}) {
-  displacementScale.uvScale = uvScale;
-  displacementScale.update();
+  // displacementScale.uvScale = uvScale;
+  // displacementScale.update();
+  material.uniforms.uvScale.value = uvScale;
 
   material.needsUpdate = true;
   render();
@@ -206,6 +207,8 @@ buildDomTree(
 
 environmentLoader.init.then(names => graphicsControls.addEnvironments(names));
 materialLoader.init.then(names => graphicsControls.addMaterials(names));
+
+setMaterialOptions(graphicsControls.materialOptions);
 
 window.addEventListener('resize', resize);
 resize();

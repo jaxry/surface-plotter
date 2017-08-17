@@ -15,9 +15,8 @@ export default class {
       }
     };
 
-    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 1, max: 10});
+    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 0, max: 10, value: 5});
     this.uvScale.domElement.title = 'The higher the scale, the smaller the texture.';
-    this.uvScale.value = 3;
 
     this.domElement = buildDomTree(
       createElem('div', {class: 'parametricControls content'}), [
@@ -62,7 +61,7 @@ export default class {
 
   get materialOptions() {
     return {
-      uvScale: Math.max(1, this.uvScale.value)
+      uvScale: 0.6 * Math.pow(1.3, this.uvScale.value - 5)
     };
   }
 }

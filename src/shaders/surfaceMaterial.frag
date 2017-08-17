@@ -80,6 +80,7 @@ vec4 triplanarBlending( vec2 xPlane, vec2 yPlane, vec2 zPlane, vec3 weights, sam
 
 }
 
+uniform float uvScale;
 varying vec3 vObjectPos;
 varying vec3 vObjectNormal;
 
@@ -95,14 +96,14 @@ void main() {
 	#include <normal_flip>
 
 	vec3 blendWeights = abs( vObjectNormal );
-	blendWeights = pow( blendWeights, vec3( 50 ) );
+	blendWeights = pow( blendWeights, vec3( 25 ) );
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
 	vec3 orientation = flipNormal * sign( vObjectNormal );
 
-	vec2 xPlane = vec2( -orientation.x * vObjectPos.z, -vObjectPos.y );
-	vec2 yPlane = vec2( vObjectPos.x, orientation.y * vObjectPos.z );
-	vec2 zPlane = vec2( orientation.z * vObjectPos.x, -vObjectPos.y );
+	vec2 xPlane = uvScale * vec2( -orientation.x * vObjectPos.z, -vObjectPos.y );
+	vec2 yPlane = uvScale * vec2( vObjectPos.x, orientation.y * vObjectPos.z );
+	vec2 zPlane = uvScale * vec2( orientation.z * vObjectPos.x, -vObjectPos.y );
 
 	#if defined USE_AOMAP
 		vec4 texelPbr = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, aoMap );
