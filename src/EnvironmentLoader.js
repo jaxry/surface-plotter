@@ -22,7 +22,7 @@ export default class {
 
     if (lights.hemisphere) {
       const info = lights.hemisphere;
-      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 4));
+      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 1.5));
     }
 
     if (lights.directional) {
@@ -30,7 +30,7 @@ export default class {
       const nearPlane = 1;
 
       for (let info of lights.directional) {
-        const light = new THREE.DirectionalLight(info.color, info.intensity || 2.5);
+        const light = new THREE.DirectionalLight(info.color, info.intensity || 3);
         light.position.setFromSpherical(new THREE.Spherical(distance + nearPlane, info.lat * Math.PI, info.lon * Math.PI));
         light.updateMatrix();
         if (info.shadow === undefined || info.shadow) {

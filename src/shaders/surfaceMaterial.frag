@@ -95,15 +95,17 @@ void main() {
 	#include <logdepthbuf_fragment>
 	#include <normal_flip>
 
+	vec3 normal = normalize( vNormal ) * flipNormal;
+
 	vec3 blendWeights = abs( vObjectNormal );
 	blendWeights = pow( blendWeights, vec3( 25 ) );
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
 	vec3 orientation = flipNormal * sign( vObjectNormal );
 
-	vec2 xPlane = uvScale * vec2( -orientation.x * vObjectPos.z, -vObjectPos.y );
-	vec2 yPlane = uvScale * vec2( vObjectPos.x, orientation.y * vObjectPos.z );
-	vec2 zPlane = uvScale * vec2( orientation.z * vObjectPos.x, -vObjectPos.y );
+	vec2 xPlane = uvScale * vec2( -orientation.x * vObjectPos.z, vObjectPos.y );
+	vec2 yPlane = uvScale * vec2( vObjectPos.x, -orientation.y * vObjectPos.z );
+	vec2 zPlane = uvScale * vec2( orientation.z * vObjectPos.x, vObjectPos.y );
 
 	#if defined USE_AOMAP
 		vec4 texelPbr = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, aoMap );
@@ -145,13 +147,11 @@ void main() {
 	#endif
 	// #include <normal_flip>
 	// #include <normal_fragment>
-	vec3 normal = normalize( vNormal ) * flipNormal;
-
 	#ifdef USE_NORMALMAP
 
 		// Workaround for Adreno 3XX dFd*( vec3 ) bug. See #9988
-		vec3 dxEyePos = vec3( dFdx( vViewPosition.x ), dFdx( vViewPosition.y ), dFdx( vViewPosition.z ) );
-		vec3 dyEyePos = vec3( dFdy( vViewPosition.x ), dFdy( vViewPosition.y ), dFdy( vViewPosition.z ) );
+		vec3 dxEyePos = vec3( dFdx( -vViewPosition.x ), dFdx( -vViewPosition.y ), dFdx( -vViewPosition.z ) );
+		vec3 dyEyePos = vec3( dFdy( -vViewPosition.x ), dFdy( -vViewPosition.y ), dFdy( -vViewPosition.z ) );
 
 		vec3 xNormal = perturbNormal2Arb( dxEyePos, dyEyePos, normal, xPlane );
 		vec3 yNormal = perturbNormal2Arb( dxEyePos, dyEyePos, normal, yPlane );

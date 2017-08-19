@@ -48,6 +48,7 @@ const material = new SurfaceMaterial({
   side: THREE.DoubleSide
 });
 material.setBuiltinUniform('color', 0xffffff);
+material.setBuiltinUniform('normalScale', new THREE.Vector2(1, -1));
 
 // const material = new THREE.MeshNormalMaterial({
 //   wireframe: true,

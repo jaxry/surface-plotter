@@ -33,7 +33,7 @@ export default class {
       t.wrapS = THREE.RepeatWrapping;
       t.wrapT = THREE.RepeatWrapping;
       t.anisotropy = this.anisotropy;
-      t.flipY = false;
+      t.flipY = true;
     });
   }
 
