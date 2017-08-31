@@ -76,11 +76,11 @@ export default class {
     // this.vStart.value = 0; this.vEnd.value = 1.58;
 
     // plane
-    // this.fx.value = 'u';
-    // this.fy.value = 'v';
-    // this.fz.value = '0';
-    // this.uStart.value = 0; this.uEnd.value = 7;
-    // this.vStart.value = 0; this.vEnd.value = 7;
+    // this.fx.value = '0';
+    // this.fy.value = 'u';
+    // this.fz.value = 'v';
+    // this.uStart.value = 0; this.uEnd.value = 3;
+    // this.vStart.value = 0; this.vEnd.value = 3;
 
     this.rows.value = 128;
   }

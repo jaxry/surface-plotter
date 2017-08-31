@@ -10,6 +10,11 @@ export default class extends THREE.ShaderMaterial {
   constructor(parameters) {
     super(parameters);
     this.lights = true;
+
+    this.extensions.derivatives = true;
+    // this.extensions.shaderTextureLOD = true;
+    this.defines.USE_PARALLAXMAP = false;
+
     this.vertexShader = vertexShader;
     this.fragmentShader = fragmentShader;
 
@@ -17,6 +22,7 @@ export default class extends THREE.ShaderMaterial {
 
     this.uniforms = THREE.UniformsUtils.merge([
       ul.common,
+      ul.envmap,
       ul.aomap,
       // ul.lightmap,
       // ul.emissivemap,
@@ -38,7 +44,9 @@ export default class extends THREE.ShaderMaterial {
         clearCoatRoughness: {value: 0}
       },
       {
-        uvScale: {value: 1}
+        uvScale: {value: 1},
+        parallaxMap: { value: null },
+        parallaxScale: { value: 0.05 }
       }
     ]);
   }

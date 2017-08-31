@@ -40,35 +40,15 @@ varying vec3 vViewPosition;
 #include <shadowmap_pars_fragment>
 #include <bumpmap_pars_fragment>
 // #include <normalmap_pars_fragment>
-#ifdef USE_NORMALMAP
-
-	uniform sampler2D normalMap;
-	uniform vec2 normalScale;
-
-	// Per-Pixel Tangent Space Normal Mapping
-	// http://hacksoflife.blogspot.ch/2009/11/per-pixel-tangent-space-normal-mapping.html
-
-	vec3 perturbNormal2Arb( vec3 dxEyePos, vec3 dyEyePos, vec3 surf_norm, vec2 uv ) {
-
-		vec2 st0 = dFdx( uv.st );
-		vec2 st1 = dFdy( uv.st );
-
-		vec3 S = normalize( dxEyePos * st1.t - dyEyePos * st0.t );
-		vec3 T = normalize( -dxEyePos * st1.s + dyEyePos * st0.s );
-		vec3 N = surf_norm;
-
-		vec3 mapN = texture2D( normalMap, uv ).xyz * 2.0 - 1.0;
-		mapN.xy = normalScale * mapN.xy;
-		mat3 tsn = mat3( S, T, N );
-		return normalize( tsn * mapN );
-
-	}
-
-#endif
 #include <roughnessmap_pars_fragment>
 #include <metalnessmap_pars_fragment>
 #include <logdepthbuf_pars_fragment>
 #include <clipping_planes_pars_fragment>
+
+uniform float uvScale;
+
+varying vec3 vObjectPos;
+varying vec3 vObjectNormal;
 
 vec4 triplanarBlending( vec2 xPlane, vec2 yPlane, vec2 zPlane, vec3 weights, sampler2D texture ) {
 
@@ -80,9 +60,82 @@ vec4 triplanarBlending( vec2 xPlane, vec2 yPlane, vec2 zPlane, vec3 weights, sam
 
 }
 
-uniform float uvScale;
-varying vec3 vObjectPos;
-varying vec3 vObjectNormal;
+#if defined(USE_PARALLAXMAP) || defined(USE_NORMALMAP)
+
+	// http://www.thetenthplanet.de/archives/1180
+	mat3 cotangentFrame( vec3 N, vec3 dpdyperp, vec3 dpdxperp, vec2 duvdx, vec2 duvdy ) {
+
+		vec3 T = dpdyperp * duvdx.x + dpdxperp * duvdy.x;
+		vec3 B = dpdyperp * duvdx.y + dpdxperp * duvdy.y;
+
+		// construct a scale invariant frame
+		float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
+		return mat3( T * invmax, B * invmax, N);
+
+	}
+
+#endif
+
+#ifdef USE_NORMALMAP
+
+	uniform sampler2D normalMap;
+	uniform vec2 normalScale;
+
+	vec3 perturbNormal2Arb( mat3 TBN, vec2 uv ) {
+
+		vec3 mapN = texture2D( normalMap, uv ).xyz * 2.0 - 1.0;
+		mapN.xy = normalScale * mapN.xy;
+		return normalize( TBN * mapN );
+
+	}
+
+#endif
+
+#ifdef USE_PARALLAXMAP
+
+	uniform sampler2D parallaxMap;
+	uniform float parallaxScale;
+
+	vec2 perturbUv( vec3 V, int numSamples, float scale, vec2 uv ) {
+
+		float stepSize = 1. / float(numSamples);
+		vec2 offsetDir = -scale * parallaxScale * V.xy * stepSize / V.z;
+
+		float currRayHeight = 1.;
+		float lastSampledHeight = 1.;
+		float currSampledHeight = 1.;
+
+		for ( int i = 0; i < 512; i++ ) {
+
+			if ( i >= numSamples ) {
+				break;
+			}
+
+			currSampledHeight = texture2D( parallaxMap, uv ).r;
+
+			if ( currSampledHeight > currRayHeight ) {
+
+				float delta1 = currSampledHeight - currRayHeight;
+				float delta2 = currRayHeight + stepSize - lastSampledHeight;
+				float ratio = delta1 / ( delta1 + delta2 );
+				vec2 lastUv = uv - offsetDir;
+				uv = ratio * lastUv + ( 1. - ratio ) * uv;
+
+				break;
+
+			}
+
+			currRayHeight -= stepSize;
+			uv += offsetDir;
+			lastSampledHeight = currSampledHeight;
+
+		}
+
+		return uv;
+
+	}
+
+#endif
 
 void main() {
 
@@ -93,12 +146,12 @@ void main() {
 	vec3 totalEmissiveRadiance = emissive;
 
 	#include <logdepthbuf_fragment>
-	#include <normal_flip>
 
-	vec3 normal = normalize( vNormal ) * flipNormal;
+	float flipNormal = float( gl_FrontFacing ) * 2.0 - 1.0;
+	vec3 normal = flipNormal * normalize( vNormal );
 
 	vec3 blendWeights = abs( vObjectNormal );
-	blendWeights = pow( blendWeights, vec3( 25 ) );
+	blendWeights = pow( blendWeights, vec3( 2 ) );
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
 	vec3 orientation = flipNormal * sign( vObjectNormal );
@@ -106,6 +159,45 @@ void main() {
 	vec2 xPlane = uvScale * vec2( -orientation.x * vObjectPos.z, vObjectPos.y );
 	vec2 yPlane = uvScale * vec2( vObjectPos.x, -orientation.y * vObjectPos.z );
 	vec2 zPlane = uvScale * vec2( orientation.z * vObjectPos.x, vObjectPos.y );
+
+	#if defined(USE_PARALLAXMAP) || defined(USE_NORMALMAP)
+
+		vec3 dpdx = dFdx( -vViewPosition );
+		vec3 dpdy = dFdy( -vViewPosition );
+
+		vec2 xduvdx = dFdx( xPlane );
+		vec2 xduvdy = dFdy( xPlane );
+
+		vec2 yduvdx = dFdx( yPlane );
+		vec2 yduvdy = dFdy( yPlane );
+
+		vec2 zduvdx = dFdx( zPlane );
+		vec2 zduvdy = dFdy( zPlane );
+
+		// solve the linear system
+		vec3 dpdyperp = cross( dpdy, normal );
+		vec3 dpdxperp = cross( normal, dpdx );
+
+		mat3 xTBN = cotangentFrame( normal, dpdyperp, dpdxperp, xduvdx, xduvdy );
+		mat3 yTBN = cotangentFrame( normal, dpdyperp, dpdxperp, yduvdx, yduvdy );
+		mat3 zTBN = cotangentFrame( normal, dpdyperp, dpdxperp, zduvdx, zduvdy );
+
+	#endif
+
+	#ifdef USE_PARALLAXMAP
+
+		vec3 viewDir = normalize( vViewPosition );
+		int numSamples = int( mix( 100., 10., clamp( dot( viewDir, normal ), 0., 1. ) ) );
+
+		float maxBlend = max( blendWeights.x, max( blendWeights.y, blendWeights.z ) );
+		float minBlend = min( blendWeights.x, min( blendWeights.y, blendWeights.z ) );
+		vec3 parallaxScales = blendWeights * (maxBlend - minBlend);
+
+		xPlane = perturbUv( transpose( xTBN ) * viewDir, numSamples, parallaxScales.x, xPlane );
+		yPlane = perturbUv( transpose( yTBN ) * viewDir, numSamples, parallaxScales.y, yPlane );
+		zPlane = perturbUv( transpose( zTBN ) * viewDir, numSamples, parallaxScales.z, zPlane );
+
+	#endif
 
 	#if defined USE_AOMAP
 		vec4 texelPbr = triplanarBlending( xPlane, yPlane, zPlane, blendWeights, aoMap );
@@ -145,19 +237,14 @@ void main() {
 		metalnessFactor *= texelPbr.b;
 
 	#endif
-	// #include <normal_flip>
 	// #include <normal_fragment>
 	#ifdef USE_NORMALMAP
 
-		// Workaround for Adreno 3XX dFd*( vec3 ) bug. See #9988
-		vec3 dxEyePos = vec3( dFdx( -vViewPosition.x ), dFdx( -vViewPosition.y ), dFdx( -vViewPosition.z ) );
-		vec3 dyEyePos = vec3( dFdy( -vViewPosition.x ), dFdy( -vViewPosition.y ), dFdy( -vViewPosition.z ) );
+		vec3 xNormal = perturbNormal2Arb( xTBN, xPlane );
+		vec3 yNormal = perturbNormal2Arb( yTBN, yPlane );
+		vec3 zNormal = perturbNormal2Arb( zTBN, zPlane );
 
-		vec3 xNormal = perturbNormal2Arb( dxEyePos, dyEyePos, normal, xPlane );
-		vec3 yNormal = perturbNormal2Arb( dxEyePos, dyEyePos, normal, yPlane );
-		vec3 zNormal = perturbNormal2Arb( dxEyePos, dyEyePos, normal, zPlane );
-
-		normal = xNormal * blendWeights.x + yNormal * blendWeights.y + zNormal * blendWeights.z;
+		normal = normalize( xNormal * blendWeights.x + yNormal * blendWeights.y + zNormal * blendWeights.z );
 
 	#endif
 	#include <emissivemap_fragment>

@@ -67,24 +67,9 @@ const tweens = new Tweens();
 
 let surface;
 
-const displacementScale = new class {
-  constructor() {
-    this.surfaceScale = 1;
-    this.uvScale = 1;
-    this.initialScale = 1;
-  }
-
-  update() {
-    // const ds = this.surfaceScale * this.initialScale / this.uvScale;
-    // material.displacementScale = ds;
-    // material.displacementBias = -0.5 * ds;
-    // material.needsUpdate = true;
-  }
-};
-
 function initSurface(Surface) {
   if (surface instanceof Surface) {
-    return;
+    return surface;
   }
 
   if (surface && surface.geometry) {
@@ -92,17 +77,16 @@ function initSurface(Surface) {
   }
 
   surface = new Surface();
+
+  return surface;
 }
 
 function setParametricGeometry(definition) {
-  initSurface(ParametricSurface);
+  const surface = initSurface(ParametricSurface);
   orbitControls.onPan = null;
   orbitControls.onScale = null;
 
   const {animatable, center, scale} = surface.generate(definition);
-
-  displacementScale.surfaceScale = scale;
-  displacementScale.update();
 
   if (animatable) {
     mesh.morphTargetInfluences = [1];
@@ -119,7 +103,7 @@ function setParametricGeometry(definition) {
 }
 
 function setImplicitGeometry(definition) {
-  initSurface(ImplicitSurface);
+  const surface = initSurface(ImplicitSurface);
 
   const generate = () => {
     surface.generate(definition, orbitControls.center, orbitControls.radius);
@@ -145,8 +129,6 @@ function setEnvironment({cubemap, lights}) {
 }
 
 function setMaterialOptions({uvScale}) {
-  // displacementScale.uvScale = uvScale;
-  // displacementScale.update();
   material.uniforms.uvScale.value = uvScale;
 
   material.needsUpdate = true;
@@ -154,22 +136,31 @@ function setMaterialOptions({uvScale}) {
 }
 
 function setMaterial(properties) {
-  for (let [prop, value] of Object.entries(properties)) {
-    if (material[prop] instanceof THREE.Texture) {
-      material[prop].dispose();
-    }
-    material.setBuiltinUniform(prop, value);
-  }
 
-  displacementScale.initialScale = properties.displacementScale;
-  displacementScale.update();
+  material.defines.USE_PARALLAXMAP = false;
+
+  for (let [prop, value] of Object.entries(properties)) {
+    if (prop === 'parallaxMap' && value) {
+      if (material.uniforms[prop] instanceof THREE.Texture) {
+        material.uniforms[prop].dispose();
+      }
+      material.uniforms[prop].value = value;
+      material.defines.USE_PARALLAXMAP = true;
+    }
+    else {
+      if (material[prop] instanceof THREE.Texture) {
+        material[prop].dispose();
+      }
+      material.setBuiltinUniform(prop, value);
+    }
+  }
 
   material.needsUpdate = true;
   render();
 }
 
 const environmentLoader = new EnvironmentLoader('/presets/environments');
-const materialLoader = new MaterialLoader('/presets/materials', renderer.getMaxAnisotropy());
+const materialLoader = new MaterialLoader('/presets/materials', renderer.capabilities.getMaxAnisotropy());
 
 const graphicsControls = new GraphicsControls();
 

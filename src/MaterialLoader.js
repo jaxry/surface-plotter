@@ -4,7 +4,7 @@ import { request } from './util';
 const textureProps = {
   albedo: 'map',
   ao: 'aoMap',
-  // height: 'displacementMap',
+  height: 'parallaxMap',
   metalness: 'metalnessMap',
   normal: 'normalMap',
   roughness: 'roughnessMap'

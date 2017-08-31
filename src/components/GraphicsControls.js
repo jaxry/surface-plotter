@@ -61,7 +61,7 @@ export default class {
 
   get materialOptions() {
     return {
-      uvScale: 0.6 * Math.pow(1.3, this.uvScale.value - 5)
+      uvScale: 0.4 * Math.pow(1.3, this.uvScale.value - 5)
     };
   }
 }
