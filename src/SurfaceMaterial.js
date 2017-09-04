@@ -46,7 +46,7 @@ export default class extends THREE.ShaderMaterial {
       {
         uvScale: {value: 1},
         parallaxMap: { value: null },
-        parallaxScale: { value: 0.05 }
+        parallaxScale: { value: 0.04 }
       }
     ]);
   }

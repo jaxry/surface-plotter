@@ -65,12 +65,23 @@ vec4 triplanarBlending( vec2 xPlane, vec2 yPlane, vec2 zPlane, vec3 weights, sam
 	// http://www.thetenthplanet.de/archives/1180
 	mat3 cotangentFrame( vec3 N, vec3 dpdyperp, vec3 dpdxperp, vec2 duvdx, vec2 duvdy ) {
 
+		// solve the linear system
 		vec3 T = dpdyperp * duvdx.x + dpdxperp * duvdy.x;
 		vec3 B = dpdyperp * duvdx.y + dpdxperp * duvdy.y;
 
 		// construct a scale invariant frame
-		float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
-		return mat3( T * invmax, B * invmax, N);
+		float l = max( dot(T, T), dot(B, B) );
+		if (l == 0.) {
+
+			return mat3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+
+		}
+		else {
+
+			float invmax = inversesqrt( l );
+			return mat3( T * invmax, B * invmax, N);
+
+		}
 
 	}
 
@@ -174,7 +185,6 @@ void main() {
 		vec2 zduvdx = dFdx( zPlane );
 		vec2 zduvdy = dFdy( zPlane );
 
-		// solve the linear system
 		vec3 dpdyperp = cross( dpdy, normal );
 		vec3 dpdxperp = cross( normal, dpdx );
 
@@ -187,7 +197,7 @@ void main() {
 	#ifdef USE_PARALLAXMAP
 
 		vec3 viewDir = normalize( vViewPosition );
-		int numSamples = int( mix( 100., 10., clamp( dot( viewDir, normal ), 0., 1. ) ) );
+		int numSamples = int( mix( 50., 10., clamp( dot( viewDir, normal ), 0., 1. ) ) );
 
 		float maxBlend = max( blendWeights.x, max( blendWeights.y, blendWeights.z ) );
 		float minBlend = min( blendWeights.x, min( blendWeights.y, blendWeights.z ) );
