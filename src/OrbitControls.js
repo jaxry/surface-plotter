@@ -14,7 +14,7 @@ export default class {
     this.center = new THREE.Vector3();
     this.update();
 
-    this.panSensitivity = 0.0004;
+    this.panSensitivity = 0.0005;
     this.rotateSensitivity = 0.0012;
     this.scaleSensitivity = 1.1;
     this._mouseAction;

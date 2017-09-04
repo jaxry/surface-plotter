@@ -11,7 +11,7 @@ export default class extends Surface {
   }
 
   _newGeometry() {
-    super._newGeometry(65535, 65535);
+    super._newGeometry(65535, 131072);
 
     const positions = this.geometry.getAttribute('position');
     const normals = this.geometry.getAttribute('normal');
@@ -41,7 +41,7 @@ export default class extends Surface {
     this.triangleIndex = 0;
 
     this.polygonizer.center = center;
-    this.polygonizer.radius = radius / 2;
+    this.polygonizer.radius = 0.5 * radius;
     this.polygonizer.triangulate(definition.equation);
 
     this.geometry.getAttribute('position').needsUpdate = true;
