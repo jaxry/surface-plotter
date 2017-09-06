@@ -1,7 +1,5 @@
 const EPS = 0.0001;
 
-// extremely unoptimized implementation of Marching Cubes
-
 export default class {
   constructor(pushVertex, pushTriangle) {
     this.pushVertex = pushVertex;
@@ -116,7 +114,6 @@ export default class {
     for (let i = 0; i < this.resolution; i++) {
       for (let j = 0; j < this.resolution; j++) {
         for (let k = 0; k < this.resolution; k++) {
-
           const v0 = this._values[i][j + 1][k];
           const v1 = this._values[i + 1][j + 1][k];
           const v2 = this._values[i + 1][j][k];

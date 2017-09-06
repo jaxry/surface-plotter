@@ -2,9 +2,7 @@ import * as THREE from 'three';
 import vertexShader from './shaders/surfaceMaterial.vert';
 import fragmentShader from './shaders/surfaceMaterial.frag';
 
-const uniformNames = {
-  color: 'diffuse'
-};
+// extends MeshPhysicalMaterial with triplanar mapping and parallax mapping
 
 export default class extends THREE.ShaderMaterial {
   constructor(parameters) {
@@ -12,8 +10,6 @@ export default class extends THREE.ShaderMaterial {
     this.lights = true;
 
     this.extensions.derivatives = true;
-    // this.extensions.shaderTextureLOD = true;
-    this.defines.USE_PARALLAXMAP = false;
 
     this.vertexShader = vertexShader;
     this.fragmentShader = fragmentShader;
@@ -37,7 +33,7 @@ export default class extends THREE.ShaderMaterial {
         emissive: { value: new THREE.Color( 0x000000 ) },
         roughness: { value: 0.5 },
         metalness: { value: 0.5 },
-        envMapIntensity: { value: 1 } // temporary
+        envMapIntensity: { value: 1 }
       },
       {
         clearCoat: {value: 0},
@@ -49,19 +45,33 @@ export default class extends THREE.ShaderMaterial {
         parallaxScale: { value: 0.04 }
       }
     ]);
+
+    const materialProperties = ['aoMap', 'envMap' ,'map', 'metalness', 'metalnessMap', 'normalMap', 'normalScale', 'parallaxScale', 'roughness', 'roughnessMap', 'uvScale'];
+    for (let p of materialProperties) {
+      Object.defineProperty(this, p, {
+        enumerable: true,
+        get: () => this.uniforms[p].value,
+        set: value => {
+          this.uniforms[p].value = value;
+        }
+      });
+    }
   }
 
-  setBuiltinUniform(prop, value) {
-    this[prop] = value;
+  get color() {
+    return this.uniforms.diffuse.value;
+  }
 
-    const name = uniformNames[prop] || prop;
-    const uniform = this.uniforms[name];
+  set color(value) {
+    this.uniforms.diffuse.value.set(value);
+  }
 
-    if (uniform.value instanceof THREE.Color) {
-      uniform.value.set(value);
-    }
-    else {
-      uniform.value = value;
-    }
+  get parallaxMap() {
+    return this.uniforms.parallaxMap.value;
+  }
+
+  set parallaxMap(map) {
+    this.uniforms.parallaxMap.value = map;
+    this.defines.USE_PARALLAXMAP = map ? true : false;
   }
 }

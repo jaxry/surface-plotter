@@ -47,11 +47,12 @@ const material = new SurfaceMaterial({
   morphNormals: true,
   side: THREE.DoubleSide
 });
-material.setBuiltinUniform('color', 0xffffff);
-material.setBuiltinUniform('normalScale', new THREE.Vector2(1, -1));
+material.color = 0xffffff;
+material.normalScale = new THREE.Vector2(1, -1);
 
 // const material = new THREE.MeshNormalMaterial({
-//   wireframe: true,
+  // wireframe: true,
+  // side: THREE.DoubleSide
 // });
 
 const mesh = new THREE.Mesh();
@@ -123,36 +124,23 @@ function setEnvironment({cubemap, lights}) {
   scene.add(mesh);
   scene.add(lights);
   scene.background = cubemap;
-  material.setBuiltinUniform('envMap', cubemap);
+  material.envMap = cubemap;
   material.needsUpdate = true;
   render();
 }
 
 function setMaterialOptions({uvScale}) {
   material.uniforms.uvScale.value = uvScale;
-
   material.needsUpdate = true;
   render();
 }
 
 function setMaterial(properties) {
-
-  material.defines.USE_PARALLAXMAP = false;
-
   for (let [prop, value] of Object.entries(properties)) {
-    if (prop === 'parallaxMap' && value) {
-      if (material.uniforms[prop] instanceof THREE.Texture) {
-        material.uniforms[prop].dispose();
-      }
-      material.uniforms[prop].value = value;
-      material.defines.USE_PARALLAXMAP = true;
+    if (material[prop] instanceof THREE.Texture) {
+      material[prop].dispose();
     }
-    else {
-      if (material[prop] instanceof THREE.Texture) {
-        material[prop].dispose();
-      }
-      material.setBuiltinUniform(prop, value);
-    }
+    material[prop] = value;
   }
 
   material.needsUpdate = true;
