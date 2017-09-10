@@ -7,7 +7,7 @@ export default class {
 
     const update = debounce(() => {
       if (this.onDefinition) {
-        this.onDefinition(this.definition);
+        this.onDefinition();
       }
     }, 500);
 

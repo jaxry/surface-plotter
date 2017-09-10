@@ -7,11 +7,14 @@ export default class extends Surface {
     super();
     this.vertexIndex = 0;
     this.triangleIndex = 0;
-    this._newGeometry();
+    this._lastResolution;
   }
 
-  _newGeometry() {
-    super._newGeometry(65535, 131072);
+  _newGeometry(resolution) {
+    const r2 = resolution * resolution;
+
+    // empirically estimated buffer sizes
+    super._newGeometry(40 * r2, 200 * r2);
 
     const positions = this.geometry.getAttribute('position');
     const normals = this.geometry.getAttribute('normal');
@@ -31,11 +34,15 @@ export default class extends Surface {
       indices[this.triangleIndex++] = v3;
     };
 
-    this.polygonizer = new Polygonizer(pushVertex, pushTriangle);
+    this.polygonizer = new Polygonizer(pushVertex, pushTriangle, resolution);
   }
 
-  generate(definition, center, radius) {
+  generate(definition, center, radius, resolution) {
     super.generate();
+
+    if (resolution !== this._lastResolution) {
+      this._newGeometry(resolution);
+    }
 
     this.vertexIndex = 0;
     this.triangleIndex = 0;
@@ -49,5 +56,7 @@ export default class extends Surface {
     this.geometry.getIndex().needsUpdate = true;
 
     this.geometry.setDrawRange(0, this.triangleIndex);
+
+    this._lastResolution = resolution;
   }
 }

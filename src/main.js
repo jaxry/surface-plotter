@@ -82,12 +82,12 @@ function initSurface(Surface) {
   return surface;
 }
 
-function setParametricGeometry(definition) {
+function setParametricGeometry(definition, resolution) {
   const surface = initSurface(ParametricSurface);
   orbitControls.onPan = null;
   orbitControls.onScale = null;
 
-  const {animatable, center, scale} = surface.generate(definition);
+  const {animatable, center} = surface.generate(definition, resolution);
 
   if (animatable) {
     mesh.morphTargetInfluences = [1];
@@ -103,11 +103,11 @@ function setParametricGeometry(definition) {
   mesh.geometry = surface.geometry;
 }
 
-function setImplicitGeometry(definition) {
+function setImplicitGeometry(definition, resolution) {
   const surface = initSurface(ImplicitSurface);
 
   const generate = () => {
-    surface.generate(definition, orbitControls.center, orbitControls.radius);
+    surface.generate(definition, orbitControls.center, orbitControls.radius, resolution);
     mesh.geometry = surface.geometry;
   };
 
@@ -129,13 +129,18 @@ function setEnvironment({cubemap, lights}) {
   render();
 }
 
-function setMaterialOptions({uvScale}) {
+let materialProperties = {};
+
+function setMaterialOptions({uvScale, useParallaxMap}) {
   material.uniforms.uvScale.value = uvScale;
+  material.parallaxMap = useParallaxMap ? materialProperties.parallaxMap : null;
   material.needsUpdate = true;
   render();
 }
 
-function setMaterial(properties) {
+function setMaterial(properties, options) {
+  materialProperties = properties;
+
   for (let [prop, value] of Object.entries(properties)) {
     if (material[prop] instanceof THREE.Texture) {
       material[prop].dispose();
@@ -143,9 +148,15 @@ function setMaterial(properties) {
     material[prop] = value;
   }
 
-  material.needsUpdate = true;
-  render();
+  setMaterialOptions(options);
 }
+
+window.addEventListener('resize', resize);
+resize();
+
+// ---------------
+// User Interface
+// ---------------
 
 const environmentLoader = new EnvironmentLoader('/presets/environments');
 const materialLoader = new MaterialLoader('/presets/materials', renderer.capabilities.getMaxAnisotropy());
@@ -157,24 +168,40 @@ graphicsControls.onEnvironment = name => {
 };
 
 graphicsControls.onMaterial = name => {
-  materialLoader.load(name).then(setMaterial);
+  materialLoader.load(name).then(properties => {
+    setMaterial(properties, graphicsControls.materialOptions);
+  });
 };
 
 graphicsControls.onMaterialOptions = setMaterialOptions;
 
+let setActiveGeometry;
+
 const parametricControls = new ParametricControls();
-parametricControls.onDefinition = setParametricGeometry;
+
+function setParametricGeometryFromControls() {
+  const resolution = [64, 128, 256][graphicsControls.meshQuality];
+  setParametricGeometry(parametricControls.definition, resolution);
+  setActiveGeometry = setParametricGeometryFromControls;
+}
+
+parametricControls.onDefinition = setParametricGeometryFromControls;
 
 const implicitControls = new ImplicitControls();
-implicitControls.onDefinition = setImplicitGeometry;
+
+function setImplicitGeometryFromControls() {
+  const resolution = [16, 24, 32][graphicsControls.meshQuality];
+  setImplicitGeometry(implicitControls.definition, resolution);
+  setActiveGeometry = setImplicitGeometryFromControls;
+}
+
+implicitControls.onDefinition = setImplicitGeometryFromControls;
+
+graphicsControls.onMeshQuality = () => setActiveGeometry();
 
 const surfaceControls = new Tabs();
-surfaceControls.add('Implicit', implicitControls.domElement, () => {
-  setImplicitGeometry(implicitControls.definition);
-});
-surfaceControls.add('Parametric', parametricControls.domElement, () => {
-  setParametricGeometry(parametricControls.definition);
-});
+surfaceControls.add('Implicit', implicitControls.domElement, setImplicitGeometryFromControls);
+surfaceControls.add('Parametric', parametricControls.domElement, setParametricGeometryFromControls);
 
 buildDomTree(
   document.getElementById('controls'), [
@@ -187,8 +214,3 @@ buildDomTree(
 
 environmentLoader.init.then(names => graphicsControls.addEnvironments(names));
 materialLoader.init.then(names => graphicsControls.addMaterials(names));
-
-setMaterialOptions(graphicsControls.materialOptions);
-
-window.addEventListener('resize', resize);
-resize();

@@ -8,24 +8,23 @@ export default class extends Surface {
     super();
     this.morphPositions;
     this.morphNormals;
-    this.lastDefinition = {};
+    this._lastResolution;
   }
 
-  _newGeometry(rows, columns) {
-    const tileRows = rows - 1;
-    const tileColumns = columns - 1;
+  _newGeometry(resolution) {
+    const tileResolution = resolution - 1;
 
-    super._newGeometry(rows * columns, 6 * tileRows * tileColumns);
+    super._newGeometry(resolution * resolution, 6 * tileResolution * tileResolution);
 
     const indices = this.geometry.getIndex().array;
 
-    for (let i = 0; i < tileRows; i++) {
-      for (let j = 0; j < tileColumns; j++) {
-        const topL = columns * i + j;
-        const topR = columns * i + j + 1;
-        const botL = columns * (i + 1) + j;
-        const botR = columns * (i + 1) + j + 1;
-        const start = 6 * (tileColumns * i + j);
+    for (let i = 0; i < tileResolution; i++) {
+      for (let j = 0; j < tileResolution; j++) {
+        const topL = resolution * i + j;
+        const topR = resolution * i + j + 1;
+        const botL = resolution * (i + 1) + j;
+        const botR = resolution * (i + 1) + j + 1;
+        const start = 6 * (tileResolution * i + j);
         if (i % 2 === j % 2) {
           indices[start] = topL;
           indices[start + 1] = botR;
@@ -46,8 +45,8 @@ export default class extends Surface {
     }
   }
 
-  _computeSurface(definition) {
-    const {fx, fy, fz, u0, u1, v0, v1, rows, columns} = definition;
+  _computeSurface(definition, resolution) {
+    const {fx, fy, fz, u0, u1, v0, v1} = definition;
 
     const positions =  this.geometry.getAttribute('position');
     const normals =  this.geometry.getAttribute('normal');
@@ -59,12 +58,12 @@ export default class extends Surface {
     const rv = new THREE.Vector3();
     const normal = new THREE.Vector3();
 
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < resolution; i++) {
 
-      const vd = i / (rows - 1);
+      const vd = i / (resolution - 1);
 
-      for (let j = 0; j < columns; j++) {
-        const ud = j / (columns - 1);
+      for (let j = 0; j < resolution; j++) {
+        const ud = j / (resolution - 1);
 
         const u = u0 + ud * (u1 - u0);
         const v = v0 + vd * (v1 - v0);
@@ -93,7 +92,7 @@ export default class extends Surface {
         // cross product of tangent vectors gives surface normal
         normal.crossVectors(ru, rv).normalize();
 
-        const index = columns * i + j;
+        const index = resolution * i + j;
         positions.setXYZ(index, f.x, f.y, f.z);
         normals.setXYZ(index, normal.x, normal.y, normal.z);
 
@@ -104,24 +103,24 @@ export default class extends Surface {
     positions.needsUpdate = true;
     normals.needsUpdate = true;
 
-    center.divideScalar(rows * columns);
+    center.divideScalar(resolution * resolution);
 
     return center;
   }
 
-  generate(definition) {
+  generate(definition, resolution) {
     super.generate();
 
     let animatable;
     let center;
 
-    if (this.lastDefinition.rows !== definition.rows || this.lastDefinition.columns !== definition.columns) {
-      this._newGeometry(definition.rows, definition.columns);
+    if (this._lastResolution !== resolution) {
+      this._newGeometry(resolution);
 
       this.morphPositions = this.geometry.getAttribute('position').clone();
       this.morphNormals = this.geometry.getAttribute('normal').clone();
 
-      center = this._computeSurface(definition);
+      center = this._computeSurface(definition, resolution);
 
       animatable = false;
     }
@@ -138,19 +137,15 @@ export default class extends Surface {
       this.geometry.morphAttributes.position = [this.morphPositions];
       this.geometry.morphAttributes.normal = [this.morphNormals];
 
-      center = this._computeSurface(definition);
+      center = this._computeSurface(definition, resolution);
 
       animatable = true;
     }
 
-    const {u0, u1, v0, v1} = definition;
-    const scale = (Math.abs(u1 - u0) + Math.abs(v1 - v0)) / 2;
-
-    this.lastDefinition = definition;
+    this._lastResolution = resolution;
 
     return {
       center,
-      scale,
       animatable
     };
   }

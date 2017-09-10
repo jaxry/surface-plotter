@@ -199,13 +199,9 @@ void main() {
 		vec3 viewDir = normalize( vViewPosition );
 		int numSamples = int( mix( 50., 10., clamp( dot( viewDir, normal ), 0., 1. ) ) );
 
-		float maxBlend = max( blendWeights.x, max( blendWeights.y, blendWeights.z ) );
-		float minBlend = min( blendWeights.x, min( blendWeights.y, blendWeights.z ) );
-		vec3 parallaxScales = blendWeights * (maxBlend - minBlend);
-
-		xPlane = perturbUv( transpose( xTBN ) * viewDir, numSamples, parallaxScales.x, xPlane );
-		yPlane = perturbUv( transpose( yTBN ) * viewDir, numSamples, parallaxScales.y, yPlane );
-		zPlane = perturbUv( transpose( zTBN ) * viewDir, numSamples, parallaxScales.z, zPlane );
+		xPlane = perturbUv( transpose( xTBN ) * viewDir, numSamples, blendWeights.x, xPlane );
+		yPlane = perturbUv( transpose( yTBN ) * viewDir, numSamples, blendWeights.y, yPlane );
+		zPlane = perturbUv( transpose( zTBN ) * viewDir, numSamples, blendWeights.z, zPlane );
 
 	#endif
 

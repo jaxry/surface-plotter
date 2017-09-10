@@ -20,4 +20,8 @@ export default class {
   get value() {
     return this.select.value;
   }
+
+  set value(index) {
+    this.select.selectedIndex = index;
+  }
 }

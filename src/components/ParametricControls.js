@@ -8,7 +8,7 @@ export default class {
 
     const update = debounce(() => {
       if (this.onDefinition) {
-        this.onDefinition(this.definition);
+        this.onDefinition();
       }
     }, 500);
 
@@ -21,8 +21,6 @@ export default class {
 
     this.vStart = new NumberInput('<var>v</var> Start', update, {step: 0.1});
     this.vEnd = new NumberInput('<var>v</var> End', update, {step: 0.1});
-
-    this.rows = new NumberInput('Rows / Columns', update, {min: 2, max: 512});
 
     this.defaultValues();
 
@@ -44,10 +42,6 @@ export default class {
             this.vStart.domElement,
             this.vEnd.domElement
           ]
-        ],
-        inputGroup(), [
-          createElem('h3', null, 'Mesh Detail'),
-          this.rows.domElement,
         ]
       ]
     );
@@ -81,20 +75,15 @@ export default class {
     // this.fz.value = 'v';
     // this.uStart.value = 0; this.uEnd.value = 3;
     // this.vStart.value = 0; this.vEnd.value = 3;
-
-    this.rows.value = 128;
   }
 
   get definition() {
-    const rows = clamp(Math.round(this.rows.value), 2, 512);
     return {
       u0: this.uStart.value, u1: this.uEnd.value,
       v0: this.vStart.value, v1: this.vEnd.value,
       fx: this.fx.function,
       fy: this.fy.function,
-      fz: this.fz.function,
-      rows: rows,
-      columns: rows
+      fz: this.fz.function
     };
   }
 }
