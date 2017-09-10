@@ -1,17 +1,11 @@
-import { createElem, buildDomTree } from '../util';
-
-function emptyNode(node) {
-  while (node.firstChild) {
-    node.removeChild(node.firstChild);
-  }
-}
+import { emptyNode, createElem, buildDomTree } from '../util';
 
 export default class {
   constructor() {
     this.tabList = createElem('ul', {class: 'tabList'});
     this.contentContainer = createElem('div', {class: 'activeContent'});
 
-    this.contentById = new Map();
+    this._contentById = new Map();
     this.domElement = buildDomTree(
       createElem('div', {class: 'tabs'}), [
         this.tabList,
@@ -25,7 +19,7 @@ export default class {
   }
 
   selectTab(id) {
-    const {tab, content, callback} = this.contentById.get(id);
+    const {tab, content, callback} = this._contentById.get(id);
 
     for (let child of this.tabList.childNodes) {
       if (child === tab) {
@@ -49,13 +43,13 @@ export default class {
     tab.addEventListener('click', this._tabClick(id));
     this.tabList.appendChild(tab);
 
-    this.contentById.set(id, {
+    this._contentById.set(id, {
       tab: tab,
       content: domElement,
       callback: callback
     });
 
-    if (this.contentById.size === 1) {
+    if (this._contentById.size === 1) {
       this.selectTab(id);
     }
   }

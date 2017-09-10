@@ -6,8 +6,8 @@ const EPS = 0.00001;
 export default class extends Surface {
   constructor() {
     super();
-    this.morphPositions;
-    this.morphNormals;
+    this._morphPositions;
+    this._morphNormals;
     this._lastResolution;
   }
 
@@ -117,8 +117,8 @@ export default class extends Surface {
     if (this._lastResolution !== resolution) {
       this._newGeometry(resolution);
 
-      this.morphPositions = this.geometry.getAttribute('position').clone();
-      this.morphNormals = this.geometry.getAttribute('normal').clone();
+      this._morphPositions = this.geometry.getAttribute('position').clone();
+      this._morphNormals = this.geometry.getAttribute('normal').clone();
 
       center = this._computeSurface(definition, resolution);
 
@@ -128,14 +128,14 @@ export default class extends Surface {
       const positions = this.geometry.getAttribute('position');
       const normals = this.geometry.getAttribute('normal');
 
-      this.geometry.addAttribute('position', this.morphPositions);
-      this.geometry.addAttribute('normal', this.morphNormals);
+      this.geometry.addAttribute('position', this._morphPositions);
+      this.geometry.addAttribute('normal', this._morphNormals);
 
-      this.morphPositions = positions;
-      this.morphNormals = normals;
+      this._morphPositions = positions;
+      this._morphNormals = normals;
 
-      this.geometry.morphAttributes.position = [this.morphPositions];
-      this.geometry.morphAttributes.normal = [this.morphNormals];
+      this.geometry.morphAttributes.position = [this._morphPositions];
+      this.geometry.morphAttributes.normal = [this._morphNormals];
 
       center = this._computeSurface(definition, resolution);
 

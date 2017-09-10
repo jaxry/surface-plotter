@@ -15,7 +15,7 @@ class Tween {
     }
   }
 
-  update() {
+  _update() {
     this._timer.update();
     let t = this._timer.elapsed / this._duration;
 
@@ -100,7 +100,7 @@ class TweenFactory {
   constructor() {
     this.tweens = new Set();
     this.updating = false;
-    this._callUpdate = () => this.update();
+    this._callUpdate = () => this._update();
   }
 
   create(fromObj) {
@@ -108,10 +108,10 @@ class TweenFactory {
     return t;
   }
 
-  update() {
+  _update() {
     if (this.updating) {
       for (let tween of this.tweens) {
-        tween.update();
+        tween._update();
       }
       requestAnimationFrame(this._callUpdate);
     }
@@ -121,7 +121,7 @@ class TweenFactory {
     this.tweens.add(tween);
     if (!this.updating) {
       this.updating = true;
-      this.update();
+      this._update();
     }
   }
 

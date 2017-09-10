@@ -7,7 +7,7 @@ export default class {
     this.center = {x: 0, y: 0, z: 0};
     this.radius = 1;
 
-    this.resolution = resolution;
+    this._resolution = resolution;
 
     this._values = [];
     for (let i = 0; i <= resolution; i++) {
@@ -85,12 +85,12 @@ export default class {
 
   triangulate(equation) {
 
-    for (let i = 0; i <= this.resolution; i++) {
-      const x = this.radius * (2 * i / this.resolution - 1) + this.center.x;
-      for (let j = 0; j <= this.resolution; j++) {
-        const y = this.radius * (2 * j / this.resolution - 1) + this.center.y;
-        for (let k = 0; k <= this.resolution; k++) {
-          const z = this.radius * (2 * k / this.resolution - 1) + this.center.z;
+    for (let i = 0; i <= this._resolution; i++) {
+      const x = this.radius * (2 * i / this._resolution - 1) + this.center.x;
+      for (let j = 0; j <= this._resolution; j++) {
+        const y = this.radius * (2 * j / this._resolution - 1) + this.center.y;
+        for (let k = 0; k <= this._resolution; k++) {
+          const z = this.radius * (2 * k / this._resolution - 1) + this.center.z;
           const v = this._values[i][j][k];
           v.position.x = x;
           v.position.y = y;
@@ -104,9 +104,9 @@ export default class {
 
     const vertList = [];
 
-    for (let i = 0; i < this.resolution; i++) {
-      for (let j = 0; j < this.resolution; j++) {
-        for (let k = 0; k < this.resolution; k++) {
+    for (let i = 0; i < this._resolution; i++) {
+      for (let j = 0; j < this._resolution; j++) {
+        for (let k = 0; k < this._resolution; k++) {
           const v0 = this._values[i][j + 1][k];
           const v1 = this._values[i + 1][j + 1][k];
           const v2 = this._values[i + 1][j][k];

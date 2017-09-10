@@ -31,6 +31,12 @@ export function detachableEvents(...events) {
   };
 }
 
+export default function emptyNode(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild);
+  }
+}
+
 export function setAttribs(elem, attribs) {
   for (let name in attribs) {
     elem.setAttribute(name, attribs[name]);

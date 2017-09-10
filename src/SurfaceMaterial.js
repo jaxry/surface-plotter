@@ -4,7 +4,7 @@ import fragmentShader from './shaders/surfaceMaterial.frag';
 
 // extends MeshPhysicalMaterial with triplanar mapping and parallax mapping
 
-export default class extends THREE.ShaderMaterial {
+class SurfaceMaterial extends THREE.ShaderMaterial {
   constructor(parameters) {
     super(parameters);
     this.lights = true;
@@ -45,17 +45,6 @@ export default class extends THREE.ShaderMaterial {
         parallaxScale: { value: 0.04 }
       }
     ]);
-
-    const materialProperties = ['aoMap', 'envMap' ,'map', 'metalness', 'metalnessMap', 'normalMap', 'normalScale', 'parallaxScale', 'roughness', 'roughnessMap', 'uvScale'];
-    for (let p of materialProperties) {
-      Object.defineProperty(this, p, {
-        enumerable: true,
-        get: () => this.uniforms[p].value,
-        set: value => {
-          this.uniforms[p].value = value;
-        }
-      });
-    }
   }
 
   get color() {
@@ -75,3 +64,18 @@ export default class extends THREE.ShaderMaterial {
     this.defines.USE_PARALLAXMAP = map ? true : false;
   }
 }
+
+const materialProperties = ['aoMap', 'envMap' ,'map', 'metalness', 'metalnessMap', 'normalMap', 'normalScale', 'parallaxScale', 'roughness', 'roughnessMap', 'uvScale'];
+for (let p of materialProperties) {
+  Object.defineProperty(SurfaceMaterial.prototype, p, {
+    enumerable: true,
+    get: function() {
+      return this.uniforms[p].value;
+    },
+    set: function(value) {
+      this.uniforms[p].value = value;
+    }
+  });
+}
+
+export default SurfaceMaterial;
