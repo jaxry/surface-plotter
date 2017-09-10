@@ -112,7 +112,7 @@ main {
 .equationInput textarea {
   flex: 1 0 150px;
   resize: vertical;
-  height: 1.6em;
+  height: 2.5em;
   font-family: monospace;
   font-size: 0.85em;
 }
