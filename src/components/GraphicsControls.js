@@ -6,9 +6,9 @@ import CheckboxInput from './CheckboxInput';
 
 export default class {
   constructor() {
-    this.environmentSelect = new SelectInput('Scene', () => this.updateEnvironment());
+    this.environmentSelect = new SelectInput('Scene', () => this._updateEnvironment());
 
-    this.materialSelect = new SelectInput('Texture', () => this.updateMaterial());
+    this.materialSelect = new SelectInput('Texture', () => this._updateMaterial());
 
     const updateOptions = () => {
       if (this.onMaterialOptions) {
@@ -16,7 +16,7 @@ export default class {
       }
     };
 
-    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 0, max: 10, value: 5});
+    this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 0, max: 100, value: 50});
     this.uvScale.domElement.title = 'The higher the scale, the smaller the texture.';
 
     this.useParallaxMap = new CheckboxInput('Parallax Mapping', updateOptions, {value: true});
@@ -50,13 +50,13 @@ export default class {
     );
   }
 
-  updateEnvironment() {
+  _updateEnvironment() {
     if (this.onEnvironment) {
       this.onEnvironment(this.environmentSelect.value);
     }
   }
 
-  updateMaterial() {
+  _updateMaterial() {
     if (this.onMaterial) {
       this.onMaterial(this.materialSelect.value);
     }
@@ -66,19 +66,19 @@ export default class {
     for (let name of names) {
       this.environmentSelect.add(name);
     }
-    this.updateEnvironment();
+    this._updateEnvironment();
   }
 
   addMaterials(names) {
     for (let name of names) {
       this.materialSelect.add(name);
     }
-    this.updateMaterial();
+    this._updateMaterial();
   }
 
   get materialOptions() {
     return {
-      uvScale: 0.4 * Math.pow(1.3, this.uvScale.value - 5),
+      uvScale: 0.4 * Math.pow(1.3, this.uvScale.value - 50),
       useParallaxMap: this.useParallaxMap.value,
     };
   }

@@ -4,17 +4,6 @@ import { request } from './util';
 export default class {
   constructor(basePath) {
     this.basePath = basePath;
-
-    this.names;
-
-    this.init = request(`${basePath}/index.json`, 'json')
-      .then(index => {
-        return this.names = new Set(index.names);
-      })
-      .catch(status => {
-        console.warn(status, 'Could not load environments');
-        return Promise.reject();
-      });
   }
 
   _setupLights(lights) {
@@ -54,10 +43,6 @@ export default class {
   }
 
   load(name) {
-    if (!this.names.has(name)) {
-      return Promise.reject();
-    }
-
     const envPath = `${this.basePath}/${name}/`;
 
     const cubemapPromise = new Promise(resolve => {

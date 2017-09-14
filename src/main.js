@@ -10,7 +10,7 @@ import Tabs from './components/Tabs';
 import ParametricControls from './components/ParametricControls';
 import ImplicitControls from './components/ImplicitControls';
 import GraphicsControls from './components/GraphicsControls';
-import { createElem, buildDomTree, throttleAnimationFrame } from './util';
+import { createElem, buildDomTree, throttleAnimationFrame, request } from './util';
 
 const canvas = document.getElementById('plot');
 
@@ -151,15 +151,15 @@ function setMaterial(properties, options) {
   setMaterialOptions(options);
 }
 
+const environmentLoader = new EnvironmentLoader('/presets/environments');
+const materialLoader = new MaterialLoader('/presets/materials', renderer.capabilities.getMaxAnisotropy());
+
 window.addEventListener('resize', resize);
 resize();
 
 // ---------------
 // User Interface
 // ---------------
-
-const environmentLoader = new EnvironmentLoader('/presets/environments');
-const materialLoader = new MaterialLoader('/presets/materials', renderer.capabilities.getMaxAnisotropy());
 
 const graphicsControls = new GraphicsControls();
 
@@ -212,5 +212,8 @@ buildDomTree(
   ]
 );
 
-environmentLoader.init.then(names => graphicsControls.addEnvironments(names));
-materialLoader.init.then(names => graphicsControls.addMaterials(names));
+request('/presets/index.json', 'json')
+  .then(names => {
+    graphicsControls.addEnvironments(names.environments);
+    graphicsControls.addMaterials(names.materials);
+  });

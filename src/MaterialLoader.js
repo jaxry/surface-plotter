@@ -14,17 +14,6 @@ export default class {
   constructor(basePath, anisotropy) {
     this.basePath = basePath;
     this.anisotropy = anisotropy;
-
-    this.names;
-
-    this.init = request(`${basePath}/index.json`, 'json')
-      .then(index => {
-        return this.names = new Set(index.names);
-      })
-      .catch(status => {
-        console.warn(status, 'Could not load materials');
-        return Promise.reject();
-      });
   }
 
   _loadTexture(path) {
@@ -38,10 +27,6 @@ export default class {
   }
 
   load(name) {
-    if (!this.names.has(name)) {
-      return Promise.reject();
-    }
-
     const matPath = `${this.basePath}/${name}`;
     const material = {};
 

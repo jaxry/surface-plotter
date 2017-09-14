@@ -31,7 +31,7 @@ export function detachableEvents(...events) {
   };
 }
 
-export default function emptyNode(node) {
+export function emptyNode(node) {
   while (node.firstChild) {
     node.removeChild(node.firstChild);
   }
