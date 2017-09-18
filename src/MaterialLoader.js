@@ -14,19 +14,37 @@ export default class {
   constructor(basePath, anisotropy) {
     this.basePath = basePath;
     this.anisotropy = anisotropy;
+    this.abortLoading = [];
   }
 
   _loadTexture(path) {
-    return new Promise(resolve => {
-      const t = new THREE.TextureLoader().load(path, resolve);
-      t.wrapS = THREE.RepeatWrapping;
-      t.wrapT = THREE.RepeatWrapping;
-      t.anisotropy = this.anisotropy;
-      t.flipY = true;
+    let texture;
+
+    const promise = new Promise((resolve, reject) => {
+      texture = new THREE.TextureLoader().load(path, resolve, null, reject);
     });
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.anisotropy = this.anisotropy;
+    texture.flipY = true;
+
+    return {
+      texture,
+      promise,
+      abort: () => {
+        if (!texture.image.complete) {
+          texture.image.src = ''; // cancels the previous request
+        }
+      }
+    };
   }
 
   load(name) {
+    for (let abort of this.abortLoading) {
+      abort();
+    }
+
     const matPath = `${this.basePath}/${name}`;
     const material = {};
 
@@ -34,8 +52,13 @@ export default class {
       material[texture] = null;
     }
 
-    return request(`${matPath}/material.json`, 'json')
+    const materialRequest = request(`${matPath}/material.json`);
+
+    this.abortLoading = [materialRequest.abort];
+
+    return materialRequest.promise
       .then(definition => {
+        this.abortLoading = [];
 
         material.roughness = definition.roughness || 0.5;
         material.metalness = definition.metalness || 0;
@@ -43,18 +66,17 @@ export default class {
         const texturePromises = [];
 
         if (definition.pbr && definition.pbr.length) {
-          const promise = this._loadTexture(`${matPath}/pbr.jpg`);
+          const loading = this._loadTexture(`${matPath}/pbr.jpg`);
 
-          promise.then(texture => {
-            for (let name of definition.pbr) {
-              if (!textureProps[name]) {
-                continue;
-              }
-              material[textureProps[name]] = texture;
+          for (let name of definition.pbr) {
+            if (!textureProps[name]) {
+              continue;
             }
-          });
+            material[textureProps[name]] = loading.texture;
+          }
 
-          texturePromises.push(promise);
+          texturePromises.push(loading.promise);
+          this.abortLoading.push(loading.abort);
         }
 
         for (let name of definition.textures) {
@@ -62,16 +84,18 @@ export default class {
             continue;
           }
 
-          const promise = this._loadTexture(`${matPath}/${name}.jpg`);
-          promise.then(texture => {
-            material[textureProps[name]] = texture;
-          });
-          texturePromises.push(promise);
+          const loading = this._loadTexture(`${matPath}/${name}.jpg`);
+
+          material[textureProps[name]] = loading.texture;
+
+          texturePromises.push(loading.promise);
+          this.abortLoading.push(loading.abort);
         }
 
         return Promise.all(texturePromises);
       })
       .then(() => {
+        this.abortLoading = []; // finished downloading all images
         return material;
       });
   }

@@ -1,24 +1,26 @@
 import * as THREE from 'three';
+import CubeTextureLoader from './CubeTextureLoader';
 import { request } from './util';
 
 export default class {
   constructor(basePath) {
     this.basePath = basePath;
+    this.abortLoading = [];
   }
 
-  _setupLights(lights) {
+  _setupLights(definition) {
     const group = new THREE.Group();
 
-    if (lights.hemisphere) {
-      const info = lights.hemisphere;
+    if (definition.hemisphere) {
+      const info = definition.hemisphere;
       group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 1.5));
     }
 
-    if (lights.directional) {
+    if (definition.directional) {
       const distance = 1;
       const nearPlane = 1;
 
-      for (let info of lights.directional) {
+      for (let info of definition.directional) {
         const light = new THREE.DirectionalLight(info.color, info.intensity || 3);
         light.position.setFromSpherical(new THREE.Spherical(distance + nearPlane, info.lat * Math.PI, info.lon * Math.PI));
         light.updateMatrix();
@@ -42,27 +44,52 @@ export default class {
     return group;
   }
 
+  get default() {
+    return {
+      lights: this._setupLights({
+        hemisphere: {
+          intensity: 3,
+          sky: 0xffffff,
+          ground: 0x333333
+        }
+      }),
+      cubemap: null
+    }
+  }
+
   load(name) {
+    for (let abort of this.abortLoading) {
+      abort();
+    }
+
     const envPath = `${this.basePath}/${name}/`;
 
-    const cubemapPromise = new Promise(resolve => {
-      new THREE.CubeTextureLoader()
+    let cubemap;
+
+    const cubemapPromise = new Promise((resolve, reject) => {
+      cubemap = new CubeTextureLoader()
         .setPath(envPath)
-        .load([
-          'px.jpg', 'nx.jpg',
-          'py.jpg', 'ny.jpg',
-          'pz.jpg', 'nz.jpg'
-        ], resolve);
+        .load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'], resolve, null, reject);
     });
 
-    const lightsPromise = request(`${envPath}/lights.json`, 'json')
-      .then(lights => this._setupLights(lights));
+    const abortCubemap = () => {
+      for (let image of cubemap.images) {
+        if (!image.complete) {
+          image.src = ''; // cancels the previous request
+        }
+      }
+    };
 
-    return Promise.all([cubemapPromise, lightsPromise])
-      .then(([cubemap, lights]) => {
+    const lightsRequest = request(`${envPath}/lights.json`);
+
+    this.abortLoading = [abortCubemap, lightsRequest.abort];
+
+    return Promise.all([cubemapPromise, lightsRequest.promise])
+      .then(([cubemap, lightsDefinition]) => {
+        this.abortLoading = [];
         return {
-          cubemap,
-          lights
+          lights: this._setupLights(lightsDefinition),
+          cubemap
         };
       });
   }

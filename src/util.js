@@ -1,19 +1,37 @@
-export function request(url, responseType = "text") {
+import * as THREE from 'three';
+
+export function request(url, responseType = 'json') {
   const r = new XMLHttpRequest();
   r.responseType = responseType;
   r.open('GET', url);
-  return new Promise((resolve, reject) => {
+
+  const promise = new Promise((resolve, reject) => {
     r.onreadystatechange = () => {
 
       if (r.readyState !== XMLHttpRequest.DONE) {
         return;
       }
 
-      r.status === 200 ? resolve(r.response) : reject(r.status);
-    };
+      THREE.DefaultLoadingManager.itemEnd(url);
 
-    r.send();
+      if (r.status === 200) {
+        resolve(r.response);
+      }
+      else {
+        THREE.DefaultLoadingManager.itemError(url);
+        reject(r.status);
+      }
+    };
   });
+
+  THREE.DefaultLoadingManager.itemStart(url);
+
+  r.send();
+
+  return {
+    promise,
+    abort: () => r.abort()
+  };
 }
 
 export function detachableEvents(...events) {

@@ -47,6 +47,8 @@ const material = new SurfaceMaterial({
   morphNormals: true,
   side: THREE.DoubleSide
 });
+material.roughness = 0.75;
+material.metalness = 0;
 material.color = 0xffffff;
 material.normalScale = new THREE.Vector2(1, -1);
 
@@ -122,9 +124,13 @@ function setImplicitGeometry(definition, resolution) {
 function setEnvironment({cubemap, lights}) {
   scene.remove(...scene.children);
   scene.add(mesh);
-  scene.add(lights);
-  scene.background = cubemap;
-  material.envMap = cubemap;
+  if (cubemap) {
+    scene.background = cubemap;
+    material.envMap = cubemap;
+  }
+  if (lights) {
+    scene.add(lights);
+  }
   material.needsUpdate = true;
   render();
 }
@@ -161,16 +167,30 @@ resize();
 // User Interface
 // ---------------
 
+const loadPrompt = document.getElementById('loadPrompt');
+
+THREE.DefaultLoadingManager.onStart = () => {
+  loadPrompt.style.display = '';
+};
+
+THREE.DefaultLoadingManager.onLoad = () => {
+  loadPrompt.style.display = 'none';
+};
+
 const graphicsControls = new GraphicsControls();
 
 graphicsControls.onEnvironment = name => {
-  environmentLoader.load(name).then(setEnvironment);
+  environmentLoader.load(name)
+    .then(setEnvironment)
+    .catch(() => {}); // user switched scene mid-download
 };
 
 graphicsControls.onMaterial = name => {
-  materialLoader.load(name).then(properties => {
-    setMaterial(properties, graphicsControls.materialOptions);
-  });
+  materialLoader.load(name)
+    .then(properties => {
+      setMaterial(properties, graphicsControls.materialOptions);
+    })
+    .catch(() => {}); // user switched material mid-download
 };
 
 graphicsControls.onMaterialOptions = setMaterialOptions;
@@ -212,7 +232,9 @@ buildDomTree(
   ]
 );
 
-request('/presets/index.json', 'json')
+setEnvironment(environmentLoader.default);
+
+request('/presets/index.json').promise
   .then(names => {
     graphicsControls.addEnvironments(names.environments);
     graphicsControls.addMaterials(names.materials);

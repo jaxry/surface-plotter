@@ -6,9 +6,17 @@ import CheckboxInput from './CheckboxInput';
 
 export default class {
   constructor() {
-    this.environmentSelect = new SelectInput('Scene', () => this._updateEnvironment());
+    this.environmentSelect = new SelectInput('Scene', () => {
+      if (this.onEnvironment) {
+        this.onEnvironment(this.environmentSelect.value);
+      }
+    });
 
-    this.materialSelect = new SelectInput('Texture', () => this._updateMaterial());
+    this.materialSelect = new SelectInput('Texture', () => {
+      if (this.onMaterial) {
+        this.onMaterial(this.materialSelect.value);
+      }
+    });
 
     const updateOptions = () => {
       if (this.onMaterialOptions) {
@@ -50,30 +58,22 @@ export default class {
     );
   }
 
-  _updateEnvironment() {
-    if (this.onEnvironment) {
-      this.onEnvironment(this.environmentSelect.value);
-    }
-  }
-
-  _updateMaterial() {
-    if (this.onMaterial) {
-      this.onMaterial(this.materialSelect.value);
-    }
-  }
-
   addEnvironments(names) {
     for (let name of names) {
       this.environmentSelect.add(name);
     }
-    this._updateEnvironment();
+    if (this.onEnvironment) {
+      this.onEnvironment(this.environmentSelect.value);
+    }
   }
 
   addMaterials(names) {
     for (let name of names) {
       this.materialSelect.add(name);
     }
-    this._updateMaterial();
+    if (this.onMaterial) {
+      this.onMaterial(this.materialSelect.value);
+    }
   }
 
   get materialOptions() {

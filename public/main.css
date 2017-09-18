@@ -18,9 +18,9 @@ h1 {
 }
 
 h2 {
-  font-size: 1.25em;
+  font-size: 1.2em;
   background: #303f9f;
-  padding: 20px 0px 20px 30px;
+  padding: 18px 0px 18px 30px;
 }
 
 h2.withTabs {
@@ -49,15 +49,17 @@ label > *:not(:last-child) {
 main {
   display: flex;
   height: 100%;
+  color: #fafafa;
 }
 
-@media (max-aspect-ratio: 1/1) {
+@media (max-aspect-ratio: 5/4) {
   main {
     flex-direction: column;
   }
 }
 
-#plot {
+#plotContainer {
+  position: relative;
   overflow: hidden;
   outline: none;
   flex: 1 0 0;
@@ -66,8 +68,22 @@ main {
 #controls {
   flex: 0 0 310px;
   overflow: auto;
-  color: #fafafa;
   background: #303030;
+}
+
+#plot {
+  width: 100%;
+  height: 100%;
+}
+
+#loadPrompt {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #303030;
+  padding: 16px;
+  border-radius: 5px;
 }
 
 .content {
@@ -83,7 +99,8 @@ main {
 }
 
 .tabs .tab {
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  max-width: 130px;
   text-align: center;
   color: #9e9e9e;
   padding: 10px 15px;
@@ -122,7 +139,7 @@ main {
 }
 
 .inputGroup {
-  padding: 10px 0;
+  padding: 9px 0;
 }
 
 .inputRow > :not(:last-child) {
