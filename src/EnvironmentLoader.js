@@ -13,7 +13,7 @@ export default class {
 
     if (definition.hemisphere) {
       const info = definition.hemisphere;
-      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 1.5));
+      group.add(new THREE.HemisphereLight(info.sky, info.ground, info.intensity || 3));
     }
 
     if (definition.directional) {

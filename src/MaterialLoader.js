@@ -1,14 +1,21 @@
 import * as THREE from 'three';
 import { request } from './util';
 
-const textureProps = {
+const mapNames = {
   albedo: 'map',
-  ao: 'aoMap',
   height: 'parallaxMap',
-  metalness: 'metalnessMap',
   normal: 'normalMap',
-  roughness: 'roughnessMap'
 };
+
+const pbrNames = {
+  ao: 'aoMap',
+  roughness: 'roughnessMap',
+  metalness: 'metalnessMap',
+};
+
+function objPropWithDefault(object, property, defaultValue) {
+  return object[property] === undefined ? defaultValue : object[property];
+}
 
 export default class {
   constructor(basePath, anisotropy) {
@@ -48,7 +55,7 @@ export default class {
     const matPath = `${this.basePath}/${name}`;
     const material = {};
 
-    for (let texture of Object.values(textureProps)) {
+    for (let texture of Object.values(mapNames)) {
       material[texture] = null;
     }
 
@@ -60,33 +67,40 @@ export default class {
       .then(definition => {
         this.abortLoading = [];
 
-        material.roughness = definition.roughness || 0.5;
-        material.metalness = definition.metalness || 0;
+        material.roughness = objPropWithDefault(definition, 'roughness', 0);
+        material.metalness = objPropWithDefault(definition, 'metalness', 0);
+        material.parallaxScale = 0.03 * objPropWithDefault(definition, 'height', 1);
+        material.reflectivity = objPropWithDefault(definition, 'reflectivity', 0.5);
 
         const texturePromises = [];
+        let pbrTexture;
 
-        if (definition.pbr && definition.pbr.length) {
-          const loading = this._loadTexture(`${matPath}/pbr.jpg`);
+        for (let name of definition.map) {
+          let loading;
 
-          for (let name of definition.pbr) {
-            if (!textureProps[name]) {
-              continue;
+          if (pbrNames[name]) {
+
+            if (!pbrTexture) {
+              pbrTexture = this._loadTexture(`${matPath}/pbr.jpg`);
             }
-            material[textureProps[name]] = loading.texture;
+
+            if (name === 'roughness') {
+              material.roughness = 1;
+            }
+            if (name === 'metalness') {
+              material.metalness = 1;
+            }
+
+            loading = pbrTexture;
+            material[pbrNames[name]] = loading.texture;
           }
-
-          texturePromises.push(loading.promise);
-          this.abortLoading.push(loading.abort);
-        }
-
-        for (let name of definition.textures) {
-          if (!textureProps[name]) {
+          else if (mapNames[name]) {
+            loading = this._loadTexture(`${matPath}/${name}.jpg`);
+            material[mapNames[name]] = loading.texture;
+          }
+          else {
             continue;
           }
-
-          const loading = this._loadTexture(`${matPath}/${name}.jpg`);
-
-          material[textureProps[name]] = loading.texture;
 
           texturePromises.push(loading.promise);
           this.abortLoading.push(loading.abort);

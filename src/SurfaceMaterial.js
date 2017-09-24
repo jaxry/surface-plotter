@@ -65,7 +65,7 @@ class SurfaceMaterial extends THREE.ShaderMaterial {
   }
 }
 
-const materialProperties = ['aoMap', 'envMap' ,'map', 'metalness', 'metalnessMap', 'normalMap', 'normalScale', 'parallaxScale', 'roughness', 'roughnessMap', 'uvScale'];
+const materialProperties = ['aoMap', 'envMap' ,'map', 'metalness', 'metalnessMap', 'normalMap', 'normalScale', 'parallaxScale', 'reflectivity', 'roughness', 'roughnessMap', 'uvScale'];
 for (let p of materialProperties) {
   Object.defineProperty(SurfaceMaterial.prototype, p, {
     enumerable: true,
