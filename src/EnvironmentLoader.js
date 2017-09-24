@@ -48,7 +48,6 @@ export default class {
     return {
       lights: this._setupLights({
         hemisphere: {
-          intensity: 3,
           sky: 0xffffff,
           ground: 0x333333
         }
