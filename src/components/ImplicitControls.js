@@ -11,7 +11,8 @@ export default class {
       }
     }, 500);
 
-    this.equationInput = new EquationInput('f(x, y, z)', ['x', 'y', 'z'], update);
+    // Swap y and z so that the z-coordinate points towards the sky
+    this.equationInput = new EquationInput('f(x, y, z)', ['x', 'z', 'y'], update);
 
     this.defaultValues();
 

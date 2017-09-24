@@ -53,11 +53,6 @@ material.metalness = 0;
 material.color = 0xffffff;
 material.normalScale = new THREE.Vector2(1, -1);
 
-// const material = new THREE.MeshNormalMaterial({
-  // wireframe: true,
-  // side: THREE.DoubleSide
-// });
-
 const mesh = new THREE.Mesh();
 mesh.material = material;
 mesh.frustumCulled = false;
@@ -73,8 +68,8 @@ class Geometry {
   }
 
   _dispose() {
-    if (this._geometry) {
-      this._geometry.dispose();
+    if (this._surface.geometry) {
+      this._surface.geometry.dispose();
     }
   }
 
@@ -227,10 +222,10 @@ graphicsControls.onMaterialOptions = setMaterialOptions;
 
 const surfaceControls = new Tabs();
 
-const implicitControls = new ImplicitControls();
-
 let activeGeometry;
 let firstLoad = true;
+
+const implicitControls = new ImplicitControls();
 
 surfaceControls.add('Implicit', implicitControls.domElement, () => {
   if (activeGeometry) {

@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { clamp, detachableEvents } from './util';
 
 const v = new THREE.Vector3();
-const q = new THREE.Quaternion();
 
 export default class {
   constructor(camera, object, domElement) {

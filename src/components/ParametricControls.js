@@ -50,8 +50,8 @@ export default class {
   defaultValues() {
     // torus
     this.fx.value = '(1 + 0.5 * cos(v)) * cos(u)';
-    this.fy.value = '(1 + 0.5 * cos(v)) * sin(u)';
-    this.fz.value = '0.5 * sin(v)';
+    this.fy.value = '0.5 * sin(v)';
+    this.fz.value = '(1 + 0.5 * cos(v)) * sin(u)';
     this.uStart.value = 0; this.uEnd.value = 6.2832;
     this.vStart.value = 0; this.vEnd.value = 6.2832;
 
@@ -82,8 +82,9 @@ export default class {
       u0: this.uStart.value, u1: this.uEnd.value,
       v0: this.vStart.value, v1: this.vEnd.value,
       fx: this.fx.function,
-      fy: this.fy.function,
-      fz: this.fz.function
+      fy: this.fz.function,
+      fz: this.fy.function
+      // Swap y and z so that the z-coordinate points towards the sky
     };
   }
 }

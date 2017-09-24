@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 export default class {
   constructor() {
     this.geometry;
