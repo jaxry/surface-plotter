@@ -14,7 +14,7 @@ export default class {
     this.update();
 
     this.panSensitivity = 0.0005;
-    this.rotateSensitivity = 0.0009;
+    this.rotateSensitivity = 0.0008;
     this.scaleSensitivity = 1.1;
     this._mouseAction;
     this._detachEvents = detachableEvents(
