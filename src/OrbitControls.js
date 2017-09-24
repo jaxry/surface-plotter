@@ -22,9 +22,9 @@ export default class {
       {
         element: domElement,
         type: 'mousedown',
-        callback: e => {
+        callback: () => {
           this.domElement.requestPointerLock();
-          this._mouseAction = e.which === 1 ? this._mousePan : this._mouseObject;
+          this._mouseAction = this._mousePan;
         }
       },
       {
@@ -58,10 +58,6 @@ export default class {
 
   _mousePan(e) {
     this.pan(e.movementX * this.panSensitivity , -e.movementY * this.panSensitivity);
-  }
-
-  _mouseObject(e) {
-    this.objectRotate(e.movementX * this.rotateSensitivity, e.movementY * this.rotateSensitivity);
   }
 
   update() {
@@ -108,18 +104,6 @@ export default class {
     if (this.onPan) {
       this.onPan();
     }
-
-    this.update();
-  }
-
-  objectRotate(dx, dy) {
-    const up = v.set(0, 1, 0).applyQuaternion(this.camera.quaternion);
-    q.setFromAxisAngle(up, dx);
-    this.object.quaternion.premultiply(q);
-
-    const right = v.set(1, 0, 0).applyQuaternion(this.camera.quaternion);
-    q.setFromAxisAngle(right, dy);
-    this.object.quaternion.premultiply(q);
 
     this.update();
   }
