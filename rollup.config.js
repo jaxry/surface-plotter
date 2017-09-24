@@ -1,11 +1,13 @@
 export default {
-  entry: 'src/main',
-  dest: 'public/dist.js',
+  input: 'src/main.js',
+  output: {
+    file:'public/dist.js',
+    format: 'iife'
+  },
   globals: {
     three: 'THREE'
   },
   external: [
     'three'
   ],
-  format: 'iife'
 };
