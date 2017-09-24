@@ -55,8 +55,11 @@ export default class {
     const matPath = `${this.basePath}/${name}`;
     const material = {};
 
-    for (let texture of Object.values(mapNames)) {
-      material[texture] = null;
+    for (let name of Object.values(mapNames)) {
+      material[name] = null;
+    }
+    for (let name of Object.values(pbrNames)) {
+      material[name] = null;
     }
 
     const materialRequest = request(`${matPath}/material.json`);
