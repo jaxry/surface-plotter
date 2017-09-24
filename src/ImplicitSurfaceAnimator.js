@@ -1,9 +1,19 @@
+import Tweens from './Tweens';
+
 export default class {
-  constructor(tweens) {
-    this._tweens = tweens;
+  constructor() {
+    this._tweens = new Tweens();
     this.equation = (x, y, z) => x*x + y*y + z*z - 1;
     this.tween;
     this.onUpdate;
+  }
+
+  skipAnimation(equation) {
+    this.equation = equation;
+
+    if (this.onUpdate) {
+      this.onUpdate();
+    }
   }
 
   animate(equation) {
@@ -29,5 +39,11 @@ export default class {
         this.equation = equation;
       })
       .start();
+  }
+
+  stop() {
+    if (this.tween) {
+      this.tween.stop();
+    }
   }
 }

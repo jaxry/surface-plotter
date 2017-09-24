@@ -19,7 +19,7 @@ export default class {
   }
 
   selectTab(id) {
-    const {tab, content, callback} = this._contentById.get(id);
+    const {tab, content, onInit} = this._contentById.get(id);
 
     for (let child of this.tabList.childNodes) {
       if (child === tab) {
@@ -33,12 +33,12 @@ export default class {
     emptyNode(this.contentContainer);
     this.contentContainer.appendChild(content);
 
-    if (callback) {
-      callback();
+    if (onInit) {
+      onInit();
     }
   }
 
-  add(id, domElement, callback) {
+  add(id, domElement, onInit) {
     const tab = createElem('li', {class: 'tab'}, id);
     tab.addEventListener('click', this._tabClick(id));
     this.tabList.appendChild(tab);
@@ -46,7 +46,7 @@ export default class {
     this._contentById.set(id, {
       tab: tab,
       content: domElement,
-      callback: callback
+      onInit
     });
 
     if (this._contentById.size === 1) {

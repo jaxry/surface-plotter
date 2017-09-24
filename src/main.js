@@ -67,63 +67,88 @@ mesh.receiveShadow = true;
 const orbitControls = new OrbitControls(camera, mesh, canvas);
 orbitControls.onUpdate = render;
 
-const tweens = new Tweens();
-
-let surface;
-
-function initSurface(Surface) {
-  if (surface instanceof Surface) {
-    return surface;
+class Geometry {
+  constructor() {
+    this._surface;
   }
 
-  if (surface && surface.geometry) {
-    surface.geometry.dispose();
+  _dispose() {
+    if (this._geometry) {
+      this._geometry.dispose();
+    }
   }
 
-  surface = new Surface();
-
-  return surface;
+  destroy() {
+    mesh.geometry = null;
+    this._dispose();
+  }
 }
 
-function setParametricGeometry(definition, resolution) {
-  const surface = initSurface(ParametricSurface);
-  orbitControls.onPan = null;
-  orbitControls.onScale = null;
+class ParametricGeometry extends Geometry {
+  constructor() {
+    super();
+    this._surface = new ParametricSurface();
+    this._tweens = new Tweens();
+  }
 
-  const {animatable, center} = surface.generate(definition, resolution);
+  render(definition, resolution) {
+    this._dispose();
 
-  if (animatable) {
-    mesh.morphTargetInfluences = [1];
-    tweens.create(mesh.morphTargetInfluences)
-      .to({0: 0})
+    const {animatable, center} = this._surface.generate(definition, resolution);
+
+    mesh.geometry = this._surface.geometry;
+
+    if (animatable) {
+      mesh.morphTargetInfluences = [1];
+      this._tweens.create(mesh.morphTargetInfluences)
+        .to({0: 0})
+        .start();
+    }
+    this._tweens.create(orbitControls.center)
+      .to(center)
+      .onUpdate(() => orbitControls.update())
       .start();
-  }
-  tweens.create(orbitControls.center)
-    .to(center)
-    .onUpdate(() => orbitControls.update())
-    .start();
 
-  mesh.geometry = surface.geometry;
+  }
 }
 
-const implicitSurfaceAnimator = new ImplicitSurfaceAnimator(tweens);
+class ImplicitGeometry extends Geometry {
+  constructor() {
+    super();
+    this._surface = new ImplicitSurface();
+    this._implicitSurfaceAnimator = new ImplicitSurfaceAnimator();
+  }
 
-function setImplicitGeometry(equation, resolution) {
-  const surface = initSurface(ImplicitSurface);
+  render(equation, resolution, animate) {
+    this._dispose();
 
-  const generate = throttleAnimationFrame(() => {
-    surface.generate(implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, resolution);
-    mesh.geometry = surface.geometry;
-  });
+    const generate = throttleAnimationFrame(() => {
+      this._surface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, resolution);
+      mesh.geometry = this._surface.geometry;
+    });
 
-  implicitSurfaceAnimator.onUpdate = () => {
-    generate();
-    render();
-  };
-  orbitControls.onPan = generate;
-  orbitControls.onScale = generate;
+    this._implicitSurfaceAnimator.onUpdate = () => {
+      generate();
+      render();
+    };
 
-  implicitSurfaceAnimator.animate(equation);
+    orbitControls.onPan = generate;
+    orbitControls.onScale = generate;
+
+    if (animate) {
+      this._implicitSurfaceAnimator.animate(equation);
+    }
+    else {
+      this._implicitSurfaceAnimator.skipAnimation(equation);
+    }
+  }
+
+  destroy() {
+    super.destroy();
+    this._implicitSurfaceAnimator.stop();
+    orbitControls.onPan = null;
+    orbitControls.onScale = null;
+  }
 }
 
 function setEnvironment({cubemap, lights}) {
@@ -200,33 +225,54 @@ graphicsControls.onMaterial = name => {
 
 graphicsControls.onMaterialOptions = setMaterialOptions;
 
-let setActiveGeometry;
-
-const parametricControls = new ParametricControls();
-
-function setParametricGeometryFromControls() {
-  const resolution = [64, 128, 256][graphicsControls.meshQuality];
-  setParametricGeometry(parametricControls.definition, resolution);
-  setActiveGeometry = setParametricGeometryFromControls;
-}
-
-parametricControls.onDefinition = setParametricGeometryFromControls;
+const surfaceControls = new Tabs();
 
 const implicitControls = new ImplicitControls();
 
-function setImplicitGeometryFromControls() {
-  const resolution = [16, 32, 48][graphicsControls.meshQuality];
-  setImplicitGeometry(implicitControls.equation, resolution);
-  setActiveGeometry = setImplicitGeometryFromControls;
-}
+let activeGeometry;
+let firstLoad = true;
 
-implicitControls.onDefinition = setImplicitGeometryFromControls;
+surfaceControls.add('Implicit', implicitControls.domElement, () => {
+  if (activeGeometry) {
+    activeGeometry.destroy();
+  }
+  activeGeometry = new ImplicitGeometry();
 
-graphicsControls.onMeshQuality = () => setActiveGeometry();
+  const setGeometryFromControls = animate => {
+    return () => {
+      const resolution = [16, 32, 48][graphicsControls.meshQuality];
+      activeGeometry.render(implicitControls.equation, resolution, animate);
+    };
+  };
 
-const surfaceControls = new Tabs();
-surfaceControls.add('Implicit', implicitControls.domElement, setImplicitGeometryFromControls);
-surfaceControls.add('Parametric', parametricControls.domElement, setParametricGeometryFromControls);
+  implicitControls.onDefinition = setGeometryFromControls(true);
+  graphicsControls.onMeshQuality = setGeometryFromControls(false);
+
+  setGeometryFromControls(firstLoad)();
+
+  firstLoad = false;
+});
+
+const parametricControls = new ParametricControls();
+
+surfaceControls.add('Parametric', parametricControls.domElement, () => {
+  if (activeGeometry) {
+    activeGeometry.destroy();
+  }
+  activeGeometry = new ParametricGeometry();
+
+  const setGeometryFromControls = () => {
+    const resolution = [64, 128, 256][graphicsControls.meshQuality];
+    activeGeometry.render(parametricControls.definition, resolution);
+  };
+
+  parametricControls.onDefinition = setGeometryFromControls;
+  graphicsControls.onMeshQuality = setGeometryFromControls;
+
+  setGeometryFromControls();
+
+  firstLoad = false;
+});
 
 buildDomTree(
   document.getElementById('controls'), [
