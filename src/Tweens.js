@@ -1,5 +1,3 @@
-import Timer from './Timer';
-
 // incomplete implementation
 // based on the tween.js library
 
@@ -16,8 +14,7 @@ class Tween {
   }
 
   _update() {
-    this._timer.update();
-    let t = this._timer.elapsed / this._duration;
+    let t = (Date.now() - this._startTime) / this._duration;
 
     if (t >= 1) {
       t = 1;
@@ -44,12 +41,18 @@ class Tween {
   }
 
   start() {
-    this._timer = new Timer();
+    this._startTime = Date.now();
     this._interpolate = this._from && this._to;
     this._factory._start(this);
     if (this._onStart) {
       this._onStart(0, this._current);
     }
+    return this;
+  }
+
+  stop() {
+    this._factory._stop(this);
+    return this;
   }
 
   from(obj) {

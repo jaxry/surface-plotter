@@ -11,7 +11,7 @@ export default class {
       }
     }, 500);
 
-    this.equation = new EquationInput('f(x, y, z)', ['x', 'y', 'z'], update);
+    this.equationInput = new EquationInput('f(x, y, z)', ['x', 'y', 'z'], update);
 
     this.defaultValues();
 
@@ -19,7 +19,7 @@ export default class {
       createElem('div', {class: 'implicitControls content'}), [
         inputGroup(), [
           createElem('h3', null, 'Equation'),
-          this.equation.domElement,
+          this.equationInput.domElement,
         ],
       ]
     );
@@ -29,13 +29,11 @@ export default class {
     // this.equation.value = 'x*x + y*y + z*z - 1';
     // this.equation.value = 'cos(x) + sin(y) + z';
     // this.equation.value = 'cos(x) + cos(y) + cos(z)';
-    this.equation.value = 'cos(x + z) + cos(y + x) + cos(y + z + 2)';
+    this.equationInput.value = 'cos(x + z) + cos(y + x) + cos(y + z + 2)';
     // this.equation.value = 'y*cos(x + z) + z*x - 5*sin(y) -1';
   }
 
-  get definition() {
-    return {
-      equation: this.equation.function
-    };
+  get equation() {
+    return this.equationInput.function;
   }
 }

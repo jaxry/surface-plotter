@@ -99,12 +99,12 @@ export function mod(x, n) {
 
 function limiter(fn, waitTime, immediate, debounce, timeoutFn, clearTimeoutFn) {
   let timeoutID;
-  let lastArguments;
+  let currentArguments;
 
   function timeout() {
-    if (lastArguments) {
-      fn.apply(this, lastArguments);
-      lastArguments = null;
+    if (currentArguments) {
+      fn.apply(this, currentArguments);
+      currentArguments = null;
       timeoutID = timeoutFn(timeout, waitTime);
     }
     else {
@@ -113,7 +113,7 @@ function limiter(fn, waitTime, immediate, debounce, timeoutFn, clearTimeoutFn) {
   }
 
   return function() {
-    lastArguments = arguments;
+    currentArguments = arguments;
     if (immediate && !timeoutID) {
       timeout();
     }

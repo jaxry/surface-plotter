@@ -37,7 +37,7 @@ export default class extends Surface {
     this._polygonizer = new Polygonizer(pushVertex, pushTriangle, resolution);
   }
 
-  generate(definition, center, radius, resolution) {
+  generate(equation, center, radius, resolution) {
     super.generate();
 
     if (resolution !== this._lastResolution) {
@@ -48,8 +48,8 @@ export default class extends Surface {
     this._triangleIndex = 0;
 
     this._polygonizer.center = center;
-    this._polygonizer.radius = 0.5 * radius;
-    this._polygonizer.triangulate(definition.equation);
+    this._polygonizer.radius = 0.75 * radius;
+    this._polygonizer.triangulate(equation);
 
     this.geometry.getAttribute('position').needsUpdate = true;
     this.geometry.getAttribute('normal').needsUpdate = true;

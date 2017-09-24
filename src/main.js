@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import Tweens from './Tweens';
 import ParametricSurface from './ParametricSurface';
 import ImplicitSurface from './ImplicitSurface';
+import ImplicitSurfaceAnimator from './ImplicitSurfaceAnimator';
 import SurfaceMaterial from './SurfaceMaterial';
 import OrbitControls from './OrbitControls';
 import EnvironmentLoader from './EnvironmentLoader';
@@ -28,7 +29,7 @@ renderer.shadowMap.renderReverseSided = false;
 renderer.shadowMap.renderSingleSided = false;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(75, 1, 0.25, 100);
 const render = throttleAnimationFrame(() => {
   renderer.render(scene, camera);
 });
@@ -105,20 +106,24 @@ function setParametricGeometry(definition, resolution) {
   mesh.geometry = surface.geometry;
 }
 
-function setImplicitGeometry(definition, resolution) {
+const implicitSurfaceAnimator = new ImplicitSurfaceAnimator(tweens);
+
+function setImplicitGeometry(equation, resolution) {
   const surface = initSurface(ImplicitSurface);
 
-  const generate = () => {
-    surface.generate(definition, orbitControls.center, orbitControls.radius, resolution);
+  const generate = throttleAnimationFrame(() => {
+    surface.generate(implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, resolution);
     mesh.geometry = surface.geometry;
+  });
+
+  implicitSurfaceAnimator.onUpdate = () => {
+    generate();
+    render();
   };
+  orbitControls.onPan = generate;
+  orbitControls.onScale = generate;
 
-  orbitControls.onPan = throttleAnimationFrame(generate);
-  orbitControls.onScale = throttleAnimationFrame(generate);
-
-  generate();
-
-  render();
+  implicitSurfaceAnimator.animate(equation);
 }
 
 function setEnvironment({cubemap, lights}) {
@@ -210,8 +215,8 @@ parametricControls.onDefinition = setParametricGeometryFromControls;
 const implicitControls = new ImplicitControls();
 
 function setImplicitGeometryFromControls() {
-  const resolution = [16, 24, 32][graphicsControls.meshQuality];
-  setImplicitGeometry(implicitControls.definition, resolution);
+  const resolution = [16, 32, 48][graphicsControls.meshQuality];
+  setImplicitGeometry(implicitControls.equation, resolution);
   setActiveGeometry = setImplicitGeometryFromControls;
 }
 
