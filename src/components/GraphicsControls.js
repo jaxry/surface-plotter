@@ -25,7 +25,6 @@ export default class {
     };
 
     this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 0, max: 100, value: 50});
-    this.uvScale.domElement.title = 'The higher the scale, the smaller the texture.';
 
     this.useParallaxMap = new CheckboxInput('Parallax Mapping', updateOptions, {value: true});
     this.meshQualitySelect = new SelectInput('Mesh Quality', () => {
@@ -51,6 +50,7 @@ export default class {
         ],
         inputGroup(), [
           createElem('h3', null, 'Performance'),
+          createElem('p', null, 'If camera movement feels sluggish, disable Parallax Mapping or lower the Mesh Quality.'),
           inputRow(), [this.meshQualitySelect.domElement],
           inputRow(), [this.useParallaxMap.domElement]
         ]

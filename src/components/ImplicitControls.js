@@ -21,17 +21,14 @@ export default class {
         inputGroup(), [
           createElem('h3', null, 'Equation'),
           this.equationInput.domElement,
+          createElem('p', null, 'Hover over the input box for a list of built-in functions.')
         ],
       ]
     );
   }
 
   defaultValues() {
-    // this.equation.value = 'x*x + y*y + z*z - 1';
-    // this.equation.value = 'cos(x) + sin(y) + z';
-    // this.equation.value = 'cos(x) + cos(y) + cos(z)';
     this.equationInput.value = 'cos(x + z) + cos(y + x) + cos(y + z + 2)';
-    // this.equation.value = 'y*cos(x + z) + z*x - 5*sin(y) -1';
   }
 
   get equation() {

@@ -34,17 +34,17 @@ export default class {
         this.textarea
       ]
     );
+
+    this.domElement.title = "Constants: e, pi\nFunctions: abs(x), acos(x), acosh(x), asin(x), asinh(x), atan(x), atanh(x), atan2(y, x), ceil(x), cos(x), cosh(x), exp(x), floor(x), log(x), pow(x, y), round(x), sign(x), sin(x), sinh(x), sqrt(x), tan(x), tanh(x)";
   }
 
   _eval() {
     try {
       this.function = functionFromEquation(this.equationInputs, this.value);
       this.textarea.setCustomValidity('');
-      this.domElement.title = '';
     }
     catch (e) {
       this.textarea.setCustomValidity('Invalid equation');
-      this.domElement.title = 'Invalid equation';
     }
     return this.function;
   }

@@ -9,13 +9,31 @@
 
 <body>
   <main>
-    <section id="controls"></section>
+    <section id="controls">
+      <h1>Surface Plotter</h1>
+      <div class="content">
+        <div class="inputGroup">
+          <h3>Controls</h3>
+          <dl>
+            <dt>Mouse movement</dt>
+            <dd>Rotate camera</dd>
+          </dl>
+          <dl>
+            <dt>Click and hold</dt>
+            <dd>Pan camera</dd>
+          </dl>
+          <dl>
+            <dt>Mouse wheel</dt>
+            <dd>Zoom camera</dd>
+          </dl>
+        </div>
+      </div>
+    </section>
     <section id="plotContainer">
       <canvas id="plot" oncontextmenu="return false;"></canvas>
       <div id="loadPrompt">Loading textures...</div>
     </section>
   </main>
-
   <script src="dist.js"></script>
 </body>
 </html>
