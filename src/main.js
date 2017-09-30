@@ -44,8 +44,6 @@ function resize() {
 }
 
 const material = new SurfaceMaterial({
-  morphTargets: true,
-  morphNormals: true,
   side: THREE.DoubleSide
 });
 material.roughness = 0.75;
@@ -84,6 +82,9 @@ class ParametricGeometry extends Geometry {
     super();
     this._surface = new ParametricSurface();
     this._tweens = new Tweens();
+    material.morphTargets = true;
+    material.morphNormals = true;
+    material.needsUpdate = true;
   }
 
   render(definition, resolution) {
@@ -95,8 +96,10 @@ class ParametricGeometry extends Geometry {
 
     if (animatable) {
       mesh.morphTargetInfluences = [1];
-      this._tweens.create(mesh.morphTargetInfluences)
+      this.tween = this._tweens.create(mesh.morphTargetInfluences)
+        .duration(2000)
         .to({0: 0})
+        .onUpdate(render)
         .start();
     }
     this._tweens.create(orbitControls.center)
@@ -104,6 +107,14 @@ class ParametricGeometry extends Geometry {
       .onUpdate(() => orbitControls.update())
       .start();
 
+  }
+  destroy() {
+    super.destroy();
+    this._tweens.stopAll();
+    mesh.morphTargetInfluences = [0];
+    material.morphTargets = false;
+    material.morphNormals = false;
+    material.needsUpdate = true;
   }
 }
 
@@ -234,16 +245,14 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   activeGeometry = new ImplicitGeometry();
 
   const setGeometryFromControls = animate => {
-    return () => {
-      const resolution = [16, 32, 48][graphicsControls.meshQuality];
-      activeGeometry.render(implicitControls.equation, resolution, animate);
-    };
+    const resolution = [16, 32, 48][graphicsControls.meshQuality];
+    activeGeometry.render(implicitControls.equation, resolution, animate);
   };
 
-  implicitControls.onDefinition = setGeometryFromControls(true);
-  graphicsControls.onMeshQuality = setGeometryFromControls(false);
+  implicitControls.onDefinition = () => setGeometryFromControls(true);
+  graphicsControls.onMeshQuality = () => setGeometryFromControls(false);
 
-  setGeometryFromControls(firstLoad)();
+  setGeometryFromControls(firstLoad);
 
   firstLoad = false;
 });

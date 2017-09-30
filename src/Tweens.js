@@ -111,6 +111,12 @@ class TweenFactory {
     return t;
   }
 
+  stopAll() {
+    for (let tween of this.tweens) {
+      tween.stop();
+    }
+  }
+
   _update() {
     if (this.updating) {
       for (let tween of this.tweens) {

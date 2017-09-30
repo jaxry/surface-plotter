@@ -4,7 +4,6 @@ export default class {
   constructor() {
     this._tweens = new Tweens();
     this.equation = (x, y, z) => x*x + y*y + z*z - 1;
-    this.tween;
     this.onUpdate;
   }
 
@@ -19,14 +18,12 @@ export default class {
   animate(equation) {
     const lastEquation = this.equation;
 
-    if (this.tween) {
-      this.tween.stop();
-    }
+    this._tweens.stopAll();
 
     let time = 0;
     this.equation = (x, y, z) => (1 - time) * lastEquation(x, y, z) + time * equation(x, y, z);
 
-    this.tween = this._tweens.create()
+    this._tweens.create()
       .duration(4000)
       .onUpdate(t => {
         time = t;
@@ -35,15 +32,12 @@ export default class {
         }
       })
       .onComplete(() => {
-        this.tween = null;
         this.equation = equation;
       })
       .start();
   }
 
   stop() {
-    if (this.tween) {
-      this.tween.stop();
-    }
+    this._tweens.stopAll();
   }
 }
