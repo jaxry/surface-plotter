@@ -32,7 +32,7 @@ h2.withTabs {
 
 h3 {
   font-size: 1em;
-  padding: 0 0 8px 0;
+  padding: 0 0 6px 0;
 }
 
 dl {
@@ -155,11 +155,11 @@ main {
 }
 
 .numberInput input {
-  width: 60px;
+  width: 55px;
 }
 
 .inputGroup {
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 .inputRow > :not(:last-child) {

@@ -53,8 +53,8 @@ export default class {
     this.fx.value = '(1 + 0.5 * cos(v)) * cos(u)';
     this.fy.value = '0.5 * sin(v)';
     this.fz.value = '(1 + 0.5 * cos(v)) * sin(u)';
-    this.uBegin.value = 0; this.uEnd.value = 6.2832;
-    this.vBegin.value = 0; this.vEnd.value = 6.2832;
+    this.uBegin.value = 0; this.uEnd.value = 6.284;
+    this.vBegin.value = 0; this.vEnd.value = 6.284;
 
     // klein bottle
     // this.fx.value = '(2 + cos(u/2) * sin(v) - sin(u/2) * sin(2*v)) * cos(u)';
