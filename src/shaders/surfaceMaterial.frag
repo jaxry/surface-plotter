@@ -162,7 +162,7 @@ void main() {
 	vec3 normal = flipNormal * normalize( vNormal );
 
 	vec3 blendWeights = abs( vObjectNormal );
-	blendWeights = pow( blendWeights, vec3( 4 ) );
+	blendWeights = pow( blendWeights, vec3( 20 ) );
 	blendWeights /= blendWeights.x + blendWeights.y + blendWeights.z;
 
 	vec3 orientation = flipNormal * sign( vObjectNormal );
