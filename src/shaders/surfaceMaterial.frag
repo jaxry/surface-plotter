@@ -197,11 +197,11 @@ void main() {
 	#ifdef USE_PARALLAXMAP
 
 		vec3 viewDir = normalize( vViewPosition );
-		int numSamples = int( mix( 50., 10., clamp( dot( viewDir, normal ), 0., 1. ) ) );
+		ivec3 numSamples = ivec3(mix( 50., 10., clamp( dot( viewDir, normal ), 0., 1. ) ) * blendWeights);
 
-		xPlane = perturbUv( transpose( xTBN ) * viewDir, numSamples, blendWeights.x, xPlane );
-		yPlane = perturbUv( transpose( yTBN ) * viewDir, numSamples, blendWeights.y, yPlane );
-		zPlane = perturbUv( transpose( zTBN ) * viewDir, numSamples, blendWeights.z, zPlane );
+		xPlane = perturbUv( transpose( xTBN ) * viewDir, numSamples.x, blendWeights.x, xPlane );
+		yPlane = perturbUv( transpose( yTBN ) * viewDir, numSamples.y, blendWeights.y, yPlane );
+		zPlane = perturbUv( transpose( zTBN ) * viewDir, numSamples.z, blendWeights.z, zPlane );
 
 	#endif
 
