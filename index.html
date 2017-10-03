@@ -10,10 +10,10 @@
 
 <body>
   <main>
-    <section id="controls">
-      <h1>Surface Plotter</h1>
-      <div class="content">
-        <div class="inputGroup">
+    <div id="controls">
+      <header>
+        <h1>Surface Plotter</h1>
+        <div class="controlGroup">
           <h3>Controls</h3>
           <dl>
             <dt>Mouse movement</dt>
@@ -28,12 +28,17 @@
             <dd>Zoom camera</dd>
           </dl>
         </div>
-      </div>
-    </section>
-    <section id="plotContainer">
+      </header>
+      <section id="inputs"></section>
+      <hr>
+      <footer class="controlGroup">
+        <small>By Lucas Crane | <a href='https://github.com/jaxry/surface-plotter'>Github</a></small>
+      </footer>
+    </div>
+    <div id="plotContainer">
       <canvas id="plot" oncontextmenu="return false;"></canvas>
       <div id="loadPrompt">Loading textures...</div>
-    </section>
+    </div>
   </main>
   <script src="dist.js"></script>
 </body>

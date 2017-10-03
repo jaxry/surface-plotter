@@ -52,6 +52,16 @@ p {
   font-size: 1em;
 }
 
+small, small a {
+  color: #9e9e9e
+}
+
+hr {
+  background-color: #777777;
+  border: 0;
+  height: 1px;
+}
+
 label {
   display: inline-block;
   padding: 5px 0;
@@ -106,8 +116,8 @@ main {
   border-radius: 5px;
 }
 
-.content {
-  padding: 0 5px 0 10px;
+.controlGroup {
+  margin: 20px 5px 20px 10px;
 }
 
 .tabs .tabList {
@@ -156,10 +166,6 @@ main {
 
 .numberInput input {
   width: 55px;
-}
-
-.inputGroup {
-  padding: 12px 0;
 }
 
 .inputRow > :not(:last-child) {
