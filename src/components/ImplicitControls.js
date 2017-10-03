@@ -1,5 +1,5 @@
 import { createElem, buildDomTree, debounce } from '../util';
-import { inputGroup } from '../commonElements';
+import { controlGroup } from '../commonElements';
 import EquationInput from './EquationInput';
 
 export default class {
@@ -17,8 +17,8 @@ export default class {
     this.defaultValues();
 
     this.domElement = buildDomTree(
-      createElem('div', {class: 'implicitControls content'}), [
-        inputGroup(), [
+      createElem('div', {class: 'implicitControls'}), [
+        controlGroup(), [
           createElem('h3', null, 'Equation'),
           this.equationInput.domElement,
           createElem('p', null, 'Hover over the input box for a list of built-in functions.')

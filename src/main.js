@@ -279,7 +279,7 @@ surfaceControls.add('Parametric', parametricControls.domElement, () => {
 });
 
 buildDomTree(
-  document.getElementById('controls'), [
+  document.getElementById('inputs'), [
     createElem('h2', {class: 'withTabs'}, 'Surface Type'),
     surfaceControls.domElement,
     createElem('h2', null, 'Graphics'),

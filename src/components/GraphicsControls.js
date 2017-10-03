@@ -1,5 +1,5 @@
 import { createElem, buildDomTree } from '../util';
-import { inputGroup, inputRow } from '../commonElements';
+import { controlGroup, inputRow } from '../commonElements';
 import SelectInput from './SelectInput';
 import NumberInput from './NumberInput';
 import CheckboxInput from './CheckboxInput';
@@ -38,17 +38,17 @@ export default class {
     this.meshQualitySelect.value = 1;
 
     this.domElement = buildDomTree(
-      createElem('div', {class: 'parametricControls content'}), [
-        inputGroup(), [
+      createElem('div', {class: 'graphicsControls'}), [
+        controlGroup(), [
           createElem('h3', null, 'Environment'),
           this.environmentSelect.domElement,
         ],
-        inputGroup(), [
+        controlGroup(), [
           createElem('h3', null, 'Material'),
           inputRow(), [this.materialSelect.domElement],
           inputRow(), [this.uvScale.domElement],
         ],
-        inputGroup(), [
+        controlGroup(), [
           createElem('h3', null, 'Performance'),
           createElem('p', null, 'If camera movement feels sluggish, disable Parallax Mapping or lower the Mesh Quality.'),
           inputRow(), [this.meshQualitySelect.domElement],

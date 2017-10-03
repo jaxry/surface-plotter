@@ -1,5 +1,5 @@
 import { createElem, buildDomTree, debounce, clamp } from '../util';
-import { inputGroup, inputRow } from '../commonElements';
+import { controlGroup, inputRow } from '../commonElements';
 import EquationInput from './EquationInput';
 import NumberInput from './NumberInput';
 
@@ -25,15 +25,15 @@ export default class {
     this.defaultValues();
 
     this.domElement = buildDomTree(
-      createElem('div', {class: 'parametricControls content'}), [
-        inputGroup(), [
+      createElem('div', {class: 'parametricControls'}), [
+        controlGroup(), [
           createElem('h3', null, 'Equation'),
           this.fx.domElement,
           this.fy.domElement,
           this.fz.domElement,
           createElem('p', null, 'Hover over an input box for a list of built-in functions')
         ],
-        inputGroup(), [
+        controlGroup(), [
           createElem('h3', null, 'Domain'),
           inputRow(), [
             this.uBegin.domElement,

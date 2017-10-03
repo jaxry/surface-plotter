@@ -1,7 +1,7 @@
 import { createElem } from './util';
 
-export function inputGroup() {
-  return createElem('div', {class: 'inputGroup'});
+export function controlGroup() {
+  return createElem('div', {class: 'controlGroup'});
 }
 
 export function inputRow() {
