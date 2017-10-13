@@ -6,24 +6,20 @@ class Tween {
     this._factory = factory;
     this._duration = 1000;
     this._easing = TweenFactory.easing.smootherstep;
-    this._chain = [];
 
     if (fromObj) {
       this.from(fromObj);
     }
   }
 
-  _update() {
-    let t = (Date.now() - this._startTime) / this._duration;
+  _update(time) {
+    let t = (time - this._startTime) / this._duration;
 
     if (t >= 1) {
       t = 1;
       this._factory._stop(this);
       if (this._onComplete) {
         this._onComplete(1, this._current);
-      }
-      for (let tween of this._chain) {
-        tween.start();
       }
     }
 
@@ -77,11 +73,6 @@ class Tween {
     return this;
   }
 
-  chain(...tweens) {
-    this._chain = this._chain.concat(tweens);
-    return this;
-  }
-
   onStart(fn) {
     this._onStart = fn;
     return this;
@@ -117,10 +108,19 @@ class TweenFactory {
     }
   }
 
+  onUpdate(fn) {
+    this._onUpdate = fn;
+    return this;
+  }
+
   _update() {
     if (this.updating) {
+      const time = Date.now();
       for (let tween of this.tweens) {
-        tween._update();
+        tween._update(time);
+      }
+      if (this._onUpdate) {
+        this._onUpdate();
       }
       requestAnimationFrame(this._callUpdate);
     }

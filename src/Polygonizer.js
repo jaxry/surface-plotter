@@ -53,34 +53,22 @@ export default class {
   }
 
   _lookupEdge(equation, v1, v2, edges) {
+    let e1 = edges.get(v1);
+    let index = e1 && e1.get(v2);
 
-    const e1 = edges.get(v1);
+    if (!index) {
 
-    if (!e1) {
-      const e1 = new WeakMap();
+      if (!e1) {
+        e1 = new WeakMap();
+        edges.set(v1, e1);
+      }
 
       const p = this._surfacePoint(equation, v1, v2);
-      const vertIndex = this.pushVertex(p, this._normal(equation, p));
-
-      e1.set(v2, vertIndex);
-      edges.set(v1, e1);
-
-      return vertIndex;
+      index = this.pushVertex(p, this._normal(equation, p));
+      e1.set(v2, index);
     }
 
-    const e2 = e1.get(v2);
-
-    if (!e2) {
-      const p = this._surfacePoint(equation, v1, v2);
-      const vertIndex = this.pushVertex(p, this._normal(equation, p));
-
-      e1.set(v2, vertIndex);
-
-      return vertIndex;
-    }
-
-    return e2;
-
+    return index;
   }
 
   triangulate(equation) {

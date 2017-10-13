@@ -1,4 +1,4 @@
-import { createElem, buildDomTree, debounce, clamp } from '../util';
+import { createElem, buildDomTree, debounce } from '../util';
 import { controlGroup, inputRow } from '../commonElements';
 import EquationInput from './EquationInput';
 import NumberInput from './NumberInput';
@@ -10,7 +10,7 @@ export default class {
       if (this.onDefinition) {
         this.onDefinition();
       }
-    }, 500);
+    }, 500).function;
 
     this.fx = new EquationInput('x(u, v)', ['u', 'v'], update);
     this.fy = new EquationInput('y(u, v)', ['u', 'v'], update);

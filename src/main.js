@@ -32,7 +32,7 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 1, 0.25, 100);
 const render = throttleAnimationFrame(() => {
   renderer.render(scene, camera);
-});
+}).function;
 
 function resize() {
   const width = canvas.offsetWidth;
@@ -106,8 +106,8 @@ class ParametricGeometry extends Geometry {
       .to(center)
       .onUpdate(() => orbitControls.update())
       .start();
-
   }
+
   destroy() {
     super.destroy();
     this._tweens.stopAll();
@@ -123,35 +123,31 @@ class ImplicitGeometry extends Geometry {
     super();
     this._surface = new ImplicitSurface();
     this._implicitSurfaceAnimator = new ImplicitSurfaceAnimator();
-  }
 
-  render(equation, resolution, animate) {
-    this._dispose();
-
-    const generate = throttleAnimationFrame(() => {
-      this._surface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, resolution);
+    this._generate = throttleAnimationFrame(() => {
+      this._surface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, this._resolution);
       mesh.geometry = this._surface.geometry;
     });
 
     this._implicitSurfaceAnimator.onUpdate = () => {
-      generate();
+      this._generate.function();
       render();
     };
 
-    orbitControls.onPan = generate;
-    orbitControls.onScale = generate;
+    orbitControls.onPan = this._generate.function;
+    orbitControls.onScale = this._generate.function;
+  }
 
-    if (animate) {
-      this._implicitSurfaceAnimator.animate(equation);
-    }
-    else {
-      this._implicitSurfaceAnimator.skipAnimation(equation);
-    }
+  render(equation, resolution, morphDuration, oscillate) {
+    this._dispose();
+    this._resolution = resolution;
+    this._implicitSurfaceAnimator.morph(equation, morphDuration, oscillate);
   }
 
   destroy() {
     super.destroy();
     this._implicitSurfaceAnimator.stop();
+    this._generate.cancel();
     orbitControls.onPan = null;
     orbitControls.onScale = null;
   }
@@ -244,15 +240,16 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   }
   activeGeometry = new ImplicitGeometry();
 
-  const setGeometryFromControls = animate => {
+  const setGeometryFromControls = morphDuration => {
     const resolution = [16, 32, 48][graphicsControls.meshQuality];
-    activeGeometry.render(implicitControls.equation, resolution, animate);
+    activeGeometry.render(implicitControls.equation, resolution, morphDuration, implicitControls.oscillate);
   };
 
-  implicitControls.onDefinition = () => setGeometryFromControls(true);
-  graphicsControls.onMeshQuality = () => setGeometryFromControls(false);
+  implicitControls.onEquation = () => setGeometryFromControls(4000);
+  implicitControls.onOscillate = () => setGeometryFromControls(2000);
+  graphicsControls.onMeshQuality = () => setGeometryFromControls(0);
 
-  setGeometryFromControls(firstLoad);
+  setGeometryFromControls(firstLoad ? 8000 : 0);
 
   firstLoad = false;
 });

@@ -112,14 +112,20 @@ function limiter(fn, waitTime, immediate, debounce, timeoutFn, clearTimeoutFn) {
     }
   }
 
-  return function() {
-    currentArguments = arguments;
-    if (immediate && !timeoutID) {
-      timeout();
-    }
-    else if (debounce) {
+  return {
+    function() {
+      currentArguments = arguments;
+      if (immediate && !timeoutID) {
+        timeout();
+      }
+      else if (debounce) {
+        clearTimeoutFn(timeoutID);
+        timeoutID = timeoutFn(timeout, waitTime);
+      }
+    },
+
+    cancel() {
       clearTimeoutFn(timeoutID);
-      timeoutID = timeoutFn(timeout, waitTime);
     }
   };
 }

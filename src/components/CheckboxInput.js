@@ -2,7 +2,8 @@ import { createElem, buildDomTree } from '../util';
 
 export default class {
   constructor(name, onInput, {value = false} = {}) {
-    this.input = createElem('input', {type: 'checkbox', checked: value});
+    this.input = createElem('input', {type: 'checkbox'});
+    this.input.checked = value;
     this.input.addEventListener('change', onInput);
 
     this.domElement = buildDomTree(
