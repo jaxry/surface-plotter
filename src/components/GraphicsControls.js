@@ -27,6 +27,11 @@ export default class {
     this.uvScale = new NumberInput('Texture Scale', updateOptions, {min: 0, max: 100, value: 50});
 
     this.useParallaxMap = new CheckboxInput('Parallax Mapping', updateOptions, {value: true});
+    this.enableShadows = new CheckboxInput('Shadows', () => {
+      if (this.onEnableShadows) {
+        this.onEnableShadows(this.enableShadows.value);
+      }
+    }, {value: true});
     this.meshQualitySelect = new SelectInput('Mesh Quality', () => {
       if (this.onMeshQuality) {
         this.onMeshQuality(this.meshQuality);
@@ -50,9 +55,10 @@ export default class {
         ],
         controlGroup(), [
           createElem('h3', null, 'Performance'),
-          createElem('p', null, 'If camera movement feels sluggish, disable Parallax Mapping or lower the Mesh Quality.'),
+          createElem('p', null, 'If camera movement feels sluggish, lower these settings.'),
           inputRow(), [this.meshQualitySelect.domElement],
-          inputRow(), [this.useParallaxMap.domElement]
+          inputRow(), [this.useParallaxMap.domElement],
+          inputRow(), [this.enableShadows.domElement]
         ]
       ]
     );
@@ -85,5 +91,9 @@ export default class {
 
   get meshQuality() {
     return this.meshQualitySelect.value;
+  }
+
+  get shadowsEnabled() {
+    return this.enableShadows.value;
   }
 }

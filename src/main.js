@@ -189,6 +189,12 @@ function setMaterial(properties, options) {
   setMaterialOptions(options);
 }
 
+function enableShadows(enable) {
+  renderer.shadowMap.enabled = enable;
+  material.needsUpdate = true;
+  render();
+}
+
 const environmentLoader = new EnvironmentLoader('/presets/environments');
 const materialLoader = new MaterialLoader('/presets/materials', renderer.capabilities.getMaxAnisotropy());
 
@@ -226,6 +232,7 @@ graphicsControls.onMaterial = name => {
 };
 
 graphicsControls.onMaterialOptions = setMaterialOptions;
+graphicsControls.onEnableShadows = enableShadows;
 
 const surfaceControls = new Tabs();
 
