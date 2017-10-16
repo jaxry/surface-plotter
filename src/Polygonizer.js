@@ -17,7 +17,10 @@ export default class {
         for (let k = 0; k <= resolution; k++) {
           this._values[i][j][k] = {
             position: {x: 0, y: 0, z: 0},
-            value: 0
+            value: 0,
+            edgeX: {index: -1},
+            edgeY: {index: -1},
+            edgeZ: {index: -1}
           };
         }
       }
@@ -40,35 +43,25 @@ export default class {
     };
   }
 
-  _surfacePoint(eq, v1, v2) {
+  _surfacePoint(eq, v0, v1) {
     // linear interpolation
 
-    const mu = -v1.value / (v2.value - v1.value);
+    const mu = -v0.value / (v1.value - v0.value);
 
     return {
-      x: v1.position.x + mu * (v2.position.x - v1.position.x),
-      y: v1.position.y + mu * (v2.position.y - v1.position.y),
-      z: v1.position.z + mu * (v2.position.z - v1.position.z)
+      x: v0.position.x + mu * (v1.position.x - v0.position.x),
+      y: v0.position.y + mu * (v1.position.y - v0.position.y),
+      z: v0.position.z + mu * (v1.position.z - v0.position.z)
     };
   }
 
-  _lookupEdge(equation, v1, v2, edges) {
-    let e1 = edges.get(v1);
-    let index = e1 && e1.get(v2);
-
-    if (!index) {
-
-      if (!e1) {
-        e1 = new WeakMap();
-        edges.set(v1, e1);
-      }
-
-      const p = this._surfacePoint(equation, v1, v2);
-      index = this.pushVertex(p, this._normal(equation, p));
-      e1.set(v2, index);
+  _lookupEdge(equation, edge, v0, v1) {
+    if (edge.index === -1) {
+      const p = this._surfacePoint(equation, v0, v1);
+      edge.index = this.pushVertex(p, this._normal(equation, p));
     }
 
-    return index;
+    return edge.index;
   }
 
   triangulate(equation) {
@@ -84,11 +77,12 @@ export default class {
           v.position.y = y;
           v.position.z = z;
           v.value = equation(x, y, z);
+          v.edgeX.index = -1;
+          v.edgeY.index = -1;
+          v.edgeZ.index = -1;
         }
       }
     }
-
-    const edges = new WeakMap();
 
     const vertList = [];
 
@@ -117,18 +111,18 @@ export default class {
 
           const activeEdges = this._edgeTable[cubeIndex];
 
-          if (activeEdges & 1) vertList[0] = this._lookupEdge(equation, v0, v1, edges);
-          if (activeEdges & 2) vertList[1] = this._lookupEdge(equation, v2, v1, edges);
-          if (activeEdges & 4) vertList[2] = this._lookupEdge(equation, v3, v2, edges);
-          if (activeEdges & 8) vertList[3] = this._lookupEdge(equation, v3, v0, edges);
-          if (activeEdges & 16) vertList[4] = this._lookupEdge(equation, v4, v5, edges);
-          if (activeEdges & 32) vertList[5] = this._lookupEdge(equation, v6, v5, edges);
-          if (activeEdges & 64) vertList[6] = this._lookupEdge(equation, v7, v6, edges);
-          if (activeEdges & 128) vertList[7] = this._lookupEdge(equation, v7, v4, edges);
-          if (activeEdges & 256) vertList[8] = this._lookupEdge(equation, v0, v4, edges);
-          if (activeEdges & 512) vertList[9] = this._lookupEdge(equation, v1, v5, edges);
-          if (activeEdges & 1024) vertList[10] = this._lookupEdge(equation, v2, v6, edges);
-          if (activeEdges & 2048) vertList[11] = this._lookupEdge(equation, v3, v7, edges);
+          if (activeEdges & 1) vertList[0] = this._lookupEdge(equation, v0.edgeX, v0, v1);
+          if (activeEdges & 2) vertList[1] = this._lookupEdge(equation, v2.edgeY, v2, v1);
+          if (activeEdges & 4) vertList[2] = this._lookupEdge(equation, v3.edgeX, v3, v2);
+          if (activeEdges & 8) vertList[3] = this._lookupEdge(equation, v3.edgeY, v3, v0);
+          if (activeEdges & 16) vertList[4] = this._lookupEdge(equation, v4.edgeX, v4, v5);
+          if (activeEdges & 32) vertList[5] = this._lookupEdge(equation, v6.edgeY, v6, v5);
+          if (activeEdges & 64) vertList[6] = this._lookupEdge(equation, v7.edgeX, v7, v6);
+          if (activeEdges & 128) vertList[7] = this._lookupEdge(equation, v7.edgeY, v7, v4);
+          if (activeEdges & 256) vertList[8] = this._lookupEdge(equation, v0.edgeZ, v0, v4);
+          if (activeEdges & 512) vertList[9] = this._lookupEdge(equation, v1.edgeZ, v1, v5);
+          if (activeEdges & 1024) vertList[10] = this._lookupEdge(equation, v2.edgeZ, v2, v6);
+          if (activeEdges & 2048) vertList[11] = this._lookupEdge(equation, v3.edgeZ, v3, v7);
 
           const tri = this._triTable[cubeIndex];
 
