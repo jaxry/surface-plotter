@@ -65,15 +65,11 @@ class Geometry {
     this._surface;
   }
 
-  _dispose() {
+  destroy() {
     if (this._surface.geometry) {
       this._surface.geometry.dispose();
     }
-  }
-
-  destroy() {
     mesh.geometry = null;
-    this._dispose();
   }
 }
 
@@ -82,39 +78,41 @@ class ParametricGeometry extends Geometry {
     super();
     this._surface = new ParametricSurface();
     this._tweens = new Tweens();
-    material.morphTargets = true;
-    material.morphNormals = true;
+  }
+
+  _enableMorphTargets(enable) {
+    material.morphTargets = enable;
+    material.morphNormals = enable;
     material.needsUpdate = true;
   }
 
   render(definition, resolution) {
-    this._dispose();
+    this._tweens.stopAll();
 
-    const {animatable, center} = this._surface.generate(definition, resolution);
-
+    const {animatable} = this._surface.generate(definition, resolution);
     mesh.geometry = this._surface.geometry;
 
     if (animatable) {
+      this._enableMorphTargets(true);
       mesh.morphTargetInfluences = [1];
-      this.tween = this._tweens.create(mesh.morphTargetInfluences)
-        .duration(2000)
+      this._tweens.create(mesh.morphTargetInfluences)
+        .duration(3000)
         .to({0: 0})
+        .onComplete(() => this._enableMorphTargets(false))
         .onUpdate(render)
         .start();
     }
-    this._tweens.create(orbitControls.center)
-      .to(center)
-      .onUpdate(() => orbitControls.update())
-      .start();
+    else {
+      this._enableMorphTargets(false);
+      render();
+    }
   }
 
   destroy() {
     super.destroy();
     this._tweens.stopAll();
     mesh.morphTargetInfluences = [0];
-    material.morphTargets = false;
-    material.morphNormals = false;
-    material.needsUpdate = true;
+    this._enableMorphTargets(false);
   }
 }
 
@@ -139,7 +137,6 @@ class ImplicitGeometry extends Geometry {
   }
 
   render(equation, resolution, morphDuration, oscillate) {
-    this._dispose();
     this._resolution = resolution;
     this._implicitSurfaceAnimator.morph(equation, morphDuration, oscillate);
   }
@@ -242,6 +239,8 @@ let firstLoad = true;
 const implicitControls = new ImplicitControls();
 
 surfaceControls.add('Implicit', implicitControls.domElement, () => {
+  orbitControls.resetPosition();
+
   if (activeGeometry) {
     activeGeometry.destroy();
   }
@@ -264,6 +263,8 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
 const parametricControls = new ParametricControls();
 
 surfaceControls.add('Parametric', parametricControls.domElement, () => {
+  orbitControls.resetPosition();
+
   if (activeGeometry) {
     activeGeometry.destroy();
   }

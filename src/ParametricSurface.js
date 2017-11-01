@@ -51,7 +51,6 @@ export default class extends Surface {
     const positions =  this.geometry.getAttribute('position');
     const normals =  this.geometry.getAttribute('normal');
 
-    const center = new THREE.Vector3();
     const tempv = new THREE.Vector3();
     const f = new THREE.Vector3();
     const ru = new THREE.Vector3();
@@ -95,32 +94,23 @@ export default class extends Surface {
         const index = resolution * i + j;
         positions.setXYZ(index, f.x, f.y, f.z);
         normals.setXYZ(index, normal.x, normal.y, normal.z);
-
-        center.add(f);
       }
     }
 
     positions.needsUpdate = true;
     normals.needsUpdate = true;
-
-    center.divideScalar(resolution * resolution);
-
-    return center;
   }
 
   generate(definition, resolution) {
     super.generate();
 
     let animatable;
-    let center;
 
     if (this._lastResolution !== resolution) {
       this._newGeometry(resolution);
 
       this._morphPositions = this.geometry.getAttribute('position').clone();
       this._morphNormals = this.geometry.getAttribute('normal').clone();
-
-      center = this._computeSurface(definition, resolution);
 
       animatable = false;
     }
@@ -137,15 +127,13 @@ export default class extends Surface {
       this.geometry.morphAttributes.position = [this._morphPositions];
       this.geometry.morphAttributes.normal = [this._morphNormals];
 
-      center = this._computeSurface(definition, resolution);
-
       animatable = true;
     }
 
+    this._computeSurface(definition, resolution);
     this._lastResolution = resolution;
 
     return {
-      center,
       animatable
     };
   }

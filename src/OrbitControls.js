@@ -7,11 +7,8 @@ export default class {
   constructor(camera, object, domElement) {
     this.camera = camera;
     this.object = object;
-    this.domElement = domElement;
 
-    this.radius = 3;
-    this.center = new THREE.Vector3();
-    this.update();
+    this.resetPosition();
 
     this.panSensitivity = 0.0005;
     this.rotateSensitivity = 0.0008;
@@ -22,7 +19,7 @@ export default class {
         element: domElement,
         type: 'mousedown',
         callback: () => {
-          this.domElement.requestPointerLock();
+          domElement.requestPointerLock();
           this._mouseAction = this._mousePan;
         }
       },
@@ -35,7 +32,7 @@ export default class {
         element: domElement,
         type: 'mousemove',
         callback: e => {
-          if (document.pointerLockElement !== this.domElement) {
+          if (document.pointerLockElement !== domElement) {
             return;
           }
           this._mouseAction(e);
@@ -46,6 +43,15 @@ export default class {
         type: 'wheel',
         callback: e => {
           this.scale(Math.pow(this.scaleSensitivity, Math.sign(e.deltaY)));
+        }
+      },
+      {
+        element: document,
+        type: 'keypress',
+        callback: e => {
+          if (document.pointerLockElement === domElement && e.key === ' ') {
+            this.resetPosition();
+          }
         }
       }
     );
@@ -104,6 +110,12 @@ export default class {
       this.onPan();
     }
 
+    this.update();
+  }
+
+  resetPosition() {
+    this.center = new THREE.Vector3();
+    this.radius = 3;
     this.update();
   }
 

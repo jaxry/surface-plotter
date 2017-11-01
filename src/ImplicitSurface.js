@@ -51,16 +51,16 @@ export default class extends Surface {
     this._polygonizer.radius = 0.75 * radius;
     this._polygonizer.triangulate(equation);
 
-    if (this._vertexIndex && this._triangleIndex) {
+    if (this._vertexIndex) {
       this.geometry.getAttribute('position').needsUpdate = true;
       this.geometry.getAttribute('position').updateRange.count = 3 * this._vertexIndex;
 
       this.geometry.getAttribute('normal').needsUpdate = true;
       this.geometry.getAttribute('position').updateRange.count = 3 * this._vertexIndex;
-
-      this.geometry.getIndex().needsUpdate = true;
-      this.geometry.setDrawRange(0, this._triangleIndex);
     }
+
+    this.geometry.getIndex().needsUpdate = true;
+    this.geometry.setDrawRange(0, this._triangleIndex);
 
     this._lastResolution = resolution;
   }
