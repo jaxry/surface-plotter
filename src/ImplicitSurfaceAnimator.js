@@ -45,22 +45,21 @@ export default class {
 
   morph(equation, duration, oscillate) {
     cancelAnimationFrame(this._oscillationLoopId);
+    const previouslyOscillatingEquation = this._oscillatingEquation;
 
-    const currentlyOscillatingEquation = this._oscillatingEquation;
-    this._oscillatingEquation = null;
-
-    let oscillatingEquation;
     if (oscillate) {
-      oscillatingEquation = new OscillatingEquation(equation, oscillate.amplitude, oscillate.frequency);
-      equation = oscillatingEquation.equation;
+      this._oscillatingEquation = new OscillatingEquation(equation, oscillate.amplitude, oscillate.frequency);
+      equation = this._oscillatingEquation.equation;
+    }
+    else {
+      this._oscillatingEquation = null;
     }
 
     if (!duration) {
       this._tweens.stopAll();
       this.equation = equation;
 
-      if (oscillatingEquation) {
-        this._oscillatingEquation = oscillatingEquation;
+      if (this._oscillatingEquation) {
         this._oscillationLoop();
       }
       else if (this.onUpdate) {
@@ -77,12 +76,12 @@ export default class {
       tween.onComplete(null);
     }
 
-    if (currentlyOscillatingEquation) {
+    if (previouslyOscillatingEquation) {
       this._tweens.create()
         .duration(duration)
         .easing(Tweens.easing.linear)
         .onUpdate(() => {
-          currentlyOscillatingEquation.update(Date.now());
+          previouslyOscillatingEquation.update(Date.now());
         })
         .start();
     }
@@ -92,15 +91,15 @@ export default class {
       .duration(duration)
       .onComplete(() => {
         this.equation = equation;
-        if (oscillatingEquation) {
-          this._oscillatingEquation = oscillatingEquation;
+        if (this._oscillatingEquation) {
           this._oscillationLoop();
         }
       });
 
-    if (oscillatingEquation) {
+    if (this._oscillatingEquation) {
+      const oscEq = this._oscillatingEquation;
       tween.onUpdate(() => {
-        oscillatingEquation.update(Date.now());
+        oscEq.update(Date.now());
       });
     }
 
