@@ -13,6 +13,13 @@ export default class {
     this.panSensitivity = 0.0005;
     this.rotateSensitivity = 0.0008;
     this.scaleSensitivity = 1.1;
+
+    // events
+    this.onUpdate;
+    this.onPan;
+    this.onScale;
+    this.onResetPosition;
+
     this._mouseAction;
     this._detachEvents = detachableEvents(
       {
@@ -116,6 +123,11 @@ export default class {
   resetPosition() {
     this.center = new THREE.Vector3();
     this.radius = 3;
+
+    if (this.onResetPosition) {
+      this.onResetPosition();
+    }
+
     this.update();
   }
 

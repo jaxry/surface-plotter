@@ -134,6 +134,7 @@ class ImplicitGeometry extends Geometry {
 
     orbitControls.onPan = this._generate.function;
     orbitControls.onScale = this._generate.function;
+    orbitControls.onResetPosition = this._generate.function;
   }
 
   render(equation, resolution, morphDuration, oscillate) {
@@ -147,6 +148,7 @@ class ImplicitGeometry extends Geometry {
     this._generate.cancel();
     orbitControls.onPan = null;
     orbitControls.onScale = null;
+    orbitControls.onResetPosition = null;
   }
 }
 
