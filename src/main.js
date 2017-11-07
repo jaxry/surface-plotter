@@ -46,8 +46,6 @@ function resize() {
 const material = new SurfaceMaterial({
   side: THREE.DoubleSide
 });
-material.roughness = 0.75;
-material.metalness = 0;
 material.color = 0xffffff;
 material.normalScale = new THREE.Vector2(1, -1);
 
@@ -134,7 +132,6 @@ class ImplicitGeometry extends Geometry {
 
     orbitControls.onPan = this._generate.function;
     orbitControls.onScale = this._generate.function;
-    orbitControls.onResetPosition = this._generate.function;
   }
 
   render(equation, resolution, morphDuration, oscillate) {
@@ -148,7 +145,6 @@ class ImplicitGeometry extends Geometry {
     this._generate.cancel();
     orbitControls.onPan = null;
     orbitControls.onScale = null;
-    orbitControls.onResetPosition = null;
   }
 }
 
@@ -249,7 +245,7 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   activeGeometry = new ImplicitGeometry();
 
   const setGeometryFromControls = morphDuration => {
-    const resolution = [16, 32, 48][graphicsControls.meshQuality];
+    const resolution = [20, 40, 60][graphicsControls.meshQuality];
     activeGeometry.render(implicitControls.equation, resolution, morphDuration, implicitControls.oscillate);
   };
 

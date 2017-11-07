@@ -21,12 +21,12 @@ export default class {
       const nearPlane = 1;
 
       for (let info of definition.directional) {
-        const light = new THREE.DirectionalLight(info.color, 3 * info.intensity || 3);
+        const light = new THREE.DirectionalLight(info.color || 0xffffff, 3 * info.intensity || 3);
         light.position.setFromSpherical(new THREE.Spherical(distance + nearPlane, info.lat * Math.PI, info.lon * Math.PI));
         light.updateMatrix();
         if (info.shadow === undefined || info.shadow) {
           light.castShadow = true;
-          light.shadow.bias = -0.025;
+          light.shadow.bias = -0.0225;
           light.shadow.mapSize.set(1024, 1024);
           light.shadow.camera.left = -distance;
           light.shadow.camera.right = distance;

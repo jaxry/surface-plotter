@@ -1,6 +1,3 @@
-// incomplete implementation
-// based on the tween.js library
-
 class Tween {
   constructor(factory, fromObj) {
     this._factory = factory;

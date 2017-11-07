@@ -18,7 +18,6 @@ export default class {
     this.onUpdate;
     this.onPan;
     this.onScale;
-    this.onResetPosition;
 
     this._mouseAction;
     this._detachEvents = detachableEvents(
@@ -124,8 +123,11 @@ export default class {
     this.center = new THREE.Vector3();
     this.radius = 3;
 
-    if (this.onResetPosition) {
-      this.onResetPosition();
+    if (this.onScale) {
+      this.onScale();
+    }
+    if (this.onPan) {
+      this.onPan();
     }
 
     this.update();
