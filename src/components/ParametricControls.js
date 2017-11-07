@@ -2,30 +2,52 @@ import { createElem, buildDomTree, debounce } from '../util';
 import { controlGroup, inputRow } from '../commonElements';
 import EquationInput from './EquationInput';
 import NumberInput from './NumberInput';
+import SelectInput from './SelectInput';
+import parametricEquationPresets from '../parametricEquationPresets';
 
 export default class {
   constructor() {
 
-    const update = debounce(() => {
+    const updateDefinition = debounce(() => {
       if (this.onDefinition) {
         this.onDefinition();
       }
     }, 500).function;
 
-    this.fx = new EquationInput('x(u, v)', ['u', 'v'], update);
-    this.fy = new EquationInput('y(u, v)', ['u', 'v'], update);
-    this.fz = new EquationInput('z(u, v)', ['u', 'v'], update);
+    const updateInput = () => {
+      this.definitionPreset.add('Custom');
+      this.definitionPreset.value = 'Custom';
+      updateDefinition();
+    };
 
-    this.uBegin = new NumberInput('<var>u</var> Begin', update, {step: 0.1});
-    this.uEnd = new NumberInput('<var>u</var> End', update, {step: 0.1});
+    this.fx = new EquationInput('x(u, v)', ['u', 'v'], updateInput);
+    this.fy = new EquationInput('y(u, v)', ['u', 'v'], updateInput);
+    this.fz = new EquationInput('z(u, v)', ['u', 'v'], updateInput);
 
-    this.vBegin = new NumberInput('<var>v</var> Begin', update, {step: 0.1});
-    this.vEnd = new NumberInput('<var>v</var> End', update, {step: 0.1});
+    this.uFrom = new NumberInput('<var>u</var> From', updateInput, {step: 0.1});
+    this.uTo = new NumberInput('<var>u</var> To', updateInput, {step: 0.1});
 
-    this.defaultValues();
+    this.vFrom = new NumberInput('<var>v</var> From', updateInput, {step: 0.1});
+    this.vTo = new NumberInput('<var>v</var> To', updateInput, {step: 0.1});
+
+    this.definitionPreset = new SelectInput('Preset', () => {
+      this.definitionPreset.remove('Custom');
+      this.definition = parametricEquationPresets[this.definitionPreset.value].definition;
+      if (this.onDefinition) {
+        this.onDefinition();
+      }
+    });
+
+    for (let i = 0; i < parametricEquationPresets.length; i++) {
+      this.definitionPreset.add(parametricEquationPresets[i].name, i);
+    }
+    this.definition = parametricEquationPresets[this.definitionPreset.value].definition;
 
     this.domElement = buildDomTree(
       createElem('div', {class: 'parametricControls'}), [
+        controlGroup(), [
+          this.definitionPreset.domElement
+        ],
         controlGroup(), [
           createElem('h3', null, 'Equation'),
           this.fx.domElement,
@@ -36,52 +58,30 @@ export default class {
         controlGroup(), [
           createElem('h3', null, 'Domain'),
           inputRow(), [
-            this.uBegin.domElement,
-            this.uEnd.domElement
+            this.uFrom.domElement,
+            this.uTo.domElement
           ],
           inputRow(), [
-            this.vBegin.domElement,
-            this.vEnd.domElement
+            this.vFrom.domElement,
+            this.vTo.domElement
           ]
         ]
       ]
     );
   }
 
-  defaultValues() {
-    // torus
-    this.fx.value = '(1 + 0.5 * cos(v)) * cos(u)';
-    this.fy.value = '0.5 * sin(v)';
-    this.fz.value = '(1 + 0.5 * cos(v)) * sin(u)';
-    this.uBegin.value = 0; this.uEnd.value = 6.284;
-    this.vBegin.value = 0; this.vEnd.value = 6.284;
-
-    // klein bottle
-    // this.fx.value = '(2 + cos(u/2) * sin(v) - sin(u/2) * sin(2*v)) * cos(u)';
-    // this.fy.value = 'sin(u/2) * sin(v) + cos(u/2) * sin(2*v)';
-    // this.fz.value = '(2 + cos(u/2) * sin(v) - sin(u/2) * sin(2*v)) * sin(u)';
-    // this.uStart.value = 0; this.uEnd.value = 6.283;
-    // this.vStart.value = 0; this.vEnd.value = 6.283;
-
-    // steiner surface
-    // this.fx.value = '3 * cos(v) * sin(v) * sin(u)';
-    // this.fy.value = '3 * cos(v) * sin(v) * cos(u)';
-    // this.fz.value = '3 * cos(v) * cos(v) * cos(u) * sin(u)';
-    // this.uStart.value = 0; this.uEnd.value = 6.2832;
-    // this.vStart.value = 0; this.vEnd.value = 1.58;
-
-    // plane
-    // this.fx.value = '0';
-    // this.fy.value = 'u';
-    // this.fz.value = 'v';
-    // this.uStart.value = 0; this.uEnd.value = 3;
-    // this.vStart.value = 0; this.vEnd.value = 3;
+  set definition(definition) {
+    this.fx.value = definition.fx;
+    this.fy.value = definition.fy;
+    this.fz.value = definition.fz;
+    this.uFrom.value = definition.u0; this.uTo.value = definition.u1;
+    this.vFrom.value = definition.v0; this.vTo.value = definition.v1;
   }
 
   get definition() {
     return {
-      u0: this.uBegin.value, u1: this.uEnd.value,
-      v0: this.vBegin.value, v1: this.vEnd.value,
+      u0: this.uFrom.value, u1: this.uTo.value,
+      v0: this.vFrom.value, v1: this.vTo.value,
       fx: this.fx.function,
       fy: this.fz.function,
       fz: this.fy.function

@@ -14,14 +14,26 @@ export default class {
   }
 
   add(name, value = name) {
-    this.select.appendChild(createElem('option', {value}, name));
+    if (!this.select.namedItem(name)) {
+      this.select.add(createElem('option', {value, name}, name));
+    }
+  }
+
+  remove(name) {
+    const optionElem = this.select.namedItem(name);
+    if (optionElem) {
+      this.select.remove(optionElem.index);
+    }
   }
 
   get value() {
     return this.select.value;
   }
 
-  set value(index) {
-    this.select.selectedIndex = index;
+  set value(name) {
+    const optionElem = this.select.namedItem(name);
+    if (optionElem) {
+      this.select.selectedIndex = optionElem.index;
+    }
   }
 }

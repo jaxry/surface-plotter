@@ -3,6 +3,8 @@ import { controlGroup, inputRow } from '../commonElements';
 import EquationInput from './EquationInput';
 import CheckboxInput from './CheckboxInput';
 import NumberInput from './NumberInput';
+import SelectInput from './SelectInput';
+import implicitEquationPresets from '../implicitEquationPresets';
 
 export default class {
   constructor() {
@@ -13,19 +15,36 @@ export default class {
       }
     }, 500).function;
 
+    // Swap y and z so that the z-coordinate points towards the sky
+    this.equationInput = new EquationInput('f(x, y, z)', ['x', 'z', 'y'], () => {
+      this.equationPreset.add('Custom');
+      this.equationPreset.value = 'Custom';
+      updateEquation();
+    });
+
+    this.equationPreset = new SelectInput('Preset', () => {
+      this.equationPreset.remove('Custom');
+      this.equationInput.value = implicitEquationPresets[this.equationPreset.value].equation;
+      if (this.onEquation) {
+        this.onEquation();
+      }
+    });
+
+    for (let i = 0; i < implicitEquationPresets.length; i++) {
+      this.equationPreset.add(implicitEquationPresets[i].name, i);
+    }
+    this.equationInput.value = implicitEquationPresets[this.equationPreset.value].equation;
+
     const updateOscillate = debounce(() => {
       if (this.onOscillate) {
         this.onOscillate();
       }
     }, 250, true).function;
 
-    // Swap y and z so that the z-coordinate points towards the sky
-    this.equationInput = new EquationInput('f(x, y, z)', ['x', 'z', 'y'], updateEquation);
-
-    this.oscillateAmp = new NumberInput('Amplitude', updateOscillate, {value: 0.5, min: 0, step: 0.01});
+    this.oscillateAmp = new NumberInput('Amplitude', updateOscillate, {value: 0.5, min: 0, step: 0.1});
     this.oscillateAmp.domElement.style.display = 'none';
 
-    this.oscillateFreq = new NumberInput('Frequency', updateOscillate, {value: 0.1, min: 0, step: 0.01});
+    this.oscillateFreq = new NumberInput('Frequency', updateOscillate, {value: 0.5, min: 0, step: 0.1});
     this.oscillateFreq.domElement.style.display = 'none';
 
     this.oscillateEnabled = new CheckboxInput('Enable', () => {
@@ -34,10 +53,9 @@ export default class {
       updateOscillate();
     });
 
-    this.defaultValues();
-
     this.domElement = buildDomTree(
       createElem('div', {class: 'implicitControls'}), [
+        controlGroup(), [this.equationPreset.domElement],
         controlGroup(), [
           createElem('h3', null, 'Equation'),
           this.equationInput.domElement,
@@ -52,10 +70,6 @@ export default class {
         ]
       ]
     );
-  }
-
-  defaultValues() {
-    this.equationInput.value = 'cos(x + z) + cos(y + x) + cos(y + z + 2)';
   }
 
   get equation() {

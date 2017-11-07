@@ -40,7 +40,7 @@ export default class {
     this.meshQualitySelect.add('Low', 0);
     this.meshQualitySelect.add('Medium', 1);
     this.meshQualitySelect.add('High', 2);
-    this.meshQualitySelect.value = 1;
+    this.meshQualitySelect.value = 'Medium';
 
     this.domElement = buildDomTree(
       createElem('div', {class: 'graphicsControls'}), [
