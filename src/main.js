@@ -46,6 +46,8 @@ function resize() {
 const material = new SurfaceMaterial({
   side: THREE.DoubleSide
 });
+material.roughness = 0.75;
+material.metalness = 0;
 material.color = 0xffffff;
 material.normalScale = new THREE.Vector2(1, -1);
 
