@@ -84,7 +84,7 @@ export default class {
 
   get materialOptions() {
     return {
-      uvScale: 0.4 * Math.pow(1.3, this.uvScale.value - 50),
+      uvScale: 0.6 * Math.pow(1.3, this.uvScale.value - 50),
       useParallaxMap: this.useParallaxMap.value,
     };
   }

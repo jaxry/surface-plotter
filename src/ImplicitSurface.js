@@ -48,7 +48,7 @@ export default class extends Surface {
     this._triangleIndex = 0;
 
     this._polygonizer.center = center;
-    this._polygonizer.radius = 0.75 * radius;
+    this._polygonizer.radius = 0.7 * radius;
     this._polygonizer.triangulate(equation);
 
     if (this._vertexIndex) {

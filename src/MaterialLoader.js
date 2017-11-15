@@ -72,7 +72,7 @@ export default class {
 
         material.roughness = objPropWithDefault(definition, 'roughness', 0);
         material.metalness = objPropWithDefault(definition, 'metalness', 0);
-        material.parallaxScale = 0.0125 * objPropWithDefault(definition, 'height', 1);
+        material.parallaxScale = 0.013 * objPropWithDefault(definition, 'height', 1);
         material.reflectivity = objPropWithDefault(definition, 'reflectivity', 0.5);
 
         const texturePromises = [];
