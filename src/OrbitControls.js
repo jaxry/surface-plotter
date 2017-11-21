@@ -11,8 +11,8 @@ export default class {
     this.resetPosition();
 
     this.panSensitivity = 0.0005;
-    this.rotateSensitivity = 0.0008;
-    this.scaleSensitivity = 1.1;
+    this.rotateSensitivity = 0.0009;
+    this.scaleSensitivity = 1.08;
 
     // events
     this.onUpdate;
@@ -24,15 +24,18 @@ export default class {
       {
         element: domElement,
         type: 'mousedown',
-        callback: () => {
+        callback: e => {
           domElement.requestPointerLock();
           this._mouseAction = this._mousePan;
+          e.preventDefault();
         }
       },
       {
         element: window,
         type: 'mouseup',
-        callback: () => this._mouseAction = this._mouseRotate
+        callback: () => {
+          this._mouseAction = this._mouseRotate;
+        }
       },
       {
         element: domElement,
@@ -42,6 +45,7 @@ export default class {
             return;
           }
           this._mouseAction(e);
+          e.preventDefault();
         }
       },
       {
@@ -49,6 +53,7 @@ export default class {
         type: 'wheel',
         callback: e => {
           this.scale(Math.pow(this.scaleSensitivity, Math.sign(e.deltaY)));
+          e.preventDefault();
         }
       },
       {
@@ -101,6 +106,10 @@ export default class {
       this.camera.rotation.z,
       'ZYX'
     );
+
+    if (this.onRotate) {
+      this.onRotate();
+    }
 
     this.update();
   }

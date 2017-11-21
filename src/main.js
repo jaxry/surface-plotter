@@ -11,7 +11,7 @@ import Tabs from './components/Tabs';
 import ParametricControls from './components/ParametricControls';
 import ImplicitControls from './components/ImplicitControls';
 import GraphicsControls from './components/GraphicsControls';
-import { createElem, buildDomTree, throttleAnimationFrame, request } from './util';
+import { createElem, buildDomTree, throttleAnimationFrame, debounce, request } from './util';
 
 const canvas = document.getElementById('plot');
 
@@ -60,22 +60,8 @@ mesh.receiveShadow = true;
 const orbitControls = new OrbitControls(camera, mesh, canvas);
 orbitControls.onUpdate = render;
 
-class Geometry {
+class ParametricGeometry {
   constructor() {
-    this._surface;
-  }
-
-  destroy() {
-    if (this._surface.geometry) {
-      this._surface.geometry.dispose();
-    }
-    mesh.geometry = null;
-  }
-}
-
-class ParametricGeometry extends Geometry {
-  constructor() {
-    super();
     this._surface = new ParametricSurface();
     this._tweens = new Tweens();
   }
@@ -109,31 +95,45 @@ class ParametricGeometry extends Geometry {
   }
 
   destroy() {
-    super.destroy();
+    this._surface.dispose();
     this._tweens.stopAll();
     mesh.morphTargetInfluences = [0];
     this._enableMorphTargets(false);
   }
 }
 
-class ImplicitGeometry extends Geometry {
+class ImplicitGeometry {
   constructor() {
-    super();
-    this._surface = new ImplicitSurface();
+    this._highQualitySurface = new ImplicitSurface();
+    this._lowQualitySurface = new ImplicitSurface();
     this._implicitSurfaceAnimator = new ImplicitSurfaceAnimator();
 
-    this._generate = throttleAnimationFrame(() => {
-      this._surface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, this._resolution);
-      mesh.geometry = this._surface.geometry;
+    let usingHighQualitySurface = false;
+
+    this._highQualityGenerate = debounce(() => {
+      const r = Math.round(Math.pow(10, 1/3) * this._resolution);
+      this._highQualitySurface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, r);
+      mesh.geometry = this._highQualitySurface.geometry;
+      usingHighQualitySurface = true;
+      render();
+    }, 150);
+
+    this._lowQualityGenerate = throttleAnimationFrame(() => {
+      this._lowQualitySurface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, this._resolution);
+      mesh.geometry = this._lowQualitySurface.geometry;
+      usingHighQualitySurface = false;
+      render();
+      this._highQualityGenerate.function();
     });
 
-    this._implicitSurfaceAnimator.onUpdate = () => {
-      this._generate.function();
-      render();
+    this._implicitSurfaceAnimator.onUpdate = this._lowQualityGenerate.function;
+    orbitControls.onPan = this._lowQualityGenerate.function;
+    orbitControls.onScale = this._lowQualityGenerate.function;
+    orbitControls.onRotate = () => {
+      if (!usingHighQualitySurface) {
+        this._highQualityGenerate.function();
+      }
     };
-
-    orbitControls.onPan = this._generate.function;
-    orbitControls.onScale = this._generate.function;
   }
 
   render(equation, resolution, morphDuration, oscillate) {
@@ -142,11 +142,14 @@ class ImplicitGeometry extends Geometry {
   }
 
   destroy() {
-    super.destroy();
+    this._lowQualitySurface.dispose();
+    this._highQualitySurface.dispose();
     this._implicitSurfaceAnimator.stop();
-    this._generate.cancel();
+    this._lowQualityGenerate.cancel();
+    this._highQualityGenerate.cancel();
     orbitControls.onPan = null;
     orbitControls.onScale = null;
+    orbitControls.onRotate = null;
   }
 }
 
@@ -247,7 +250,7 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   activeGeometry = new ImplicitGeometry();
 
   const setGeometryFromControls = morphDuration => {
-    const resolution = [21, 42, 63][graphicsControls.meshQuality];
+    const resolution = [22, 44, 60][graphicsControls.meshQuality];
     activeGeometry.render(implicitControls.equation, resolution, morphDuration, implicitControls.oscillate);
   };
 
@@ -255,7 +258,7 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   implicitControls.onOscillate = () => setGeometryFromControls(2000);
   graphicsControls.onMeshQuality = () => setGeometryFromControls(0);
 
-  setGeometryFromControls(firstLoad ? 8000 : 0);
+  setGeometryFromControls(firstLoad ? 10000 : 0);
 
   firstLoad = false;
 });

@@ -6,9 +6,7 @@ export default class {
   }
 
   _newGeometry(vertexCount = 0, indexCount = 0) {
-    if (this.geometry) {
-      this.geometry.dispose();
-    }
+    this.dispose();
 
     this.geometry = new THREE.BufferGeometry();
 
@@ -21,6 +19,12 @@ export default class {
     this.geometry.addAttribute('normal', normal);
 
     this.geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexCount), 1));
+  }
+
+  dispose() {
+    if (this.geometry) {
+      this.geometry.dispose();
+    }
   }
 
   generate() {
