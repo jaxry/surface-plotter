@@ -17,3 +17,6 @@ At the root of this repository's directory, run in your terminal,
 
 ### Local Server
 Run `npm run dev` to start a server which you can connect to at http://127.0.0.1:8080.
+
+## Contributing
+Any contributions are welcome. In particular, if you would like to add your own surface presets, you may submit a pull request with your preset added to [src/implicitEquationPresets.js](https://github.com/jaxry/surface-plotter/blob/master/src/implicitEquationPresets.js) or [src/parametricEquationPresets.js](https://github.com/jaxry/surface-plotter/blob/master/src/parametricEquationPresets.js).
