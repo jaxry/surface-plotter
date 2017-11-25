@@ -5,7 +5,7 @@ import { request } from './util';
 export default class {
   constructor(basePath) {
     this.basePath = basePath;
-    this.abortLoading = [];
+    this._abortLoading = [];
   }
 
   _setupLights(definition) {
@@ -57,7 +57,7 @@ export default class {
   }
 
   load(name) {
-    for (let abort of this.abortLoading) {
+    for (let abort of this._abortLoading) {
       abort();
     }
 
@@ -81,11 +81,11 @@ export default class {
 
     const lightsRequest = request(`${envPath}/lights.json`);
 
-    this.abortLoading = [abortCubemap, lightsRequest.abort];
+    this._abortLoading = [abortCubemap, lightsRequest.abort];
 
     return Promise.all([cubemapPromise, lightsRequest.promise])
       .then(([cubemap, lightsDefinition]) => {
-        this.abortLoading = [];
+        this._abortLoading = [];
         return {
           lights: this._setupLights(lightsDefinition),
           cubemap

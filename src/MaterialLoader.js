@@ -21,7 +21,7 @@ export default class {
   constructor(basePath, anisotropy) {
     this.basePath = basePath;
     this.anisotropy = anisotropy;
-    this.abortLoading = [];
+    this._abortLoading = [];
   }
 
   _loadTexture(path) {
@@ -48,7 +48,7 @@ export default class {
   }
 
   load(name) {
-    for (let abort of this.abortLoading) {
+    for (let abort of this._abortLoading) {
       abort();
     }
 
@@ -64,11 +64,11 @@ export default class {
 
     const materialRequest = request(`${matPath}/material.json`);
 
-    this.abortLoading = [materialRequest.abort];
+    this._abortLoading = [materialRequest.abort];
 
     return materialRequest.promise
       .then(definition => {
-        this.abortLoading = [];
+        this._abortLoading = [];
 
         material.roughness = objPropWithDefault(definition, 'roughness', 0);
         material.metalness = objPropWithDefault(definition, 'metalness', 0);
@@ -106,13 +106,13 @@ export default class {
           }
 
           texturePromises.push(loading.promise);
-          this.abortLoading.push(loading.abort);
+          this._abortLoading.push(loading.abort);
         }
 
         return Promise.all(texturePromises);
       })
       .then(() => {
-        this.abortLoading = []; // finished downloading all images
+        this._abortLoading = []; // finished downloading all images
         return material;
       });
   }

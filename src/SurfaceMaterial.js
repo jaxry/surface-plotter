@@ -7,8 +7,8 @@ import fragmentShader from './shaders/surfaceMaterial.frag';
 class SurfaceMaterial extends THREE.ShaderMaterial {
   constructor(parameters) {
     super(parameters);
-    this.lights = true;
 
+    this.lights = true;
     this.extensions.derivatives = true;
 
     this.vertexShader = vertexShader;
