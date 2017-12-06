@@ -1,5 +1,7 @@
 const EPS = 0.0001;
 
+// Marching Cubes algorithm with edge table provided by Paul Bourke
+
 export default class {
   constructor(pushVertex, pushTriangle, resolution) {
     this.pushVertex = pushVertex;

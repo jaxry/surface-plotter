@@ -65,6 +65,8 @@ class SurfaceMaterial extends THREE.ShaderMaterial {
   }
 }
 
+// Create getters/setters for MeshPhysicalMaterial's built-in properties.
+// This allows the user to work with SurfaceMaterial as though it were MeshPhysicalMaterial
 const materialProperties = ['aoMap', 'envMap' ,'map', 'metalness', 'metalnessMap', 'normalMap', 'normalScale', 'parallaxScale', 'reflectivity', 'roughness', 'roughnessMap', 'uvScale'];
 for (let p of materialProperties) {
   Object.defineProperty(SurfaceMaterial.prototype, p, {
