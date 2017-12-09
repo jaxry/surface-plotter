@@ -62,6 +62,7 @@ export default class {
         callback: e => {
           if (document.pointerLockElement === domElement && e.key === ' ') {
             this.resetPosition();
+            e.preventDefault();
           }
         }
       }
