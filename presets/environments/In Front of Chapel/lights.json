@@ -1,0 +1,12 @@
+{
+  "hemisphere": {
+    "sky": 7179440,
+    "ground": 13285535
+  },
+  "directional": [
+    {
+      "lat": 0.218,
+      "lon": 1.57
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "map": ["albedo", "ao", "height", "normal", "roughness"],
+  "height": 0.3,
+  "reflectivity": 0.1
+}

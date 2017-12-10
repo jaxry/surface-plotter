@@ -1,0 +1,55 @@
+{
+  "hemisphere": {
+    "sky": 1452391,
+    "ground": 10252869,
+    "intensity": 0.8
+  },
+  "directional": [
+    {
+      "lat": 0.489,
+      "lon": 1.543,
+      "color": 8565698,
+      "intensity": 0.6
+    },
+    {
+      "lat": 0.384,
+      "lon": 1.134,
+      "color": 16777214,
+      "intensity": 0.3
+    },
+    {
+      "lat": 0.394,
+      "lon": 1.944,
+      "color": 16777214,
+      "intensity": 0.3
+    },
+    {
+      "lat": 0.367,
+      "lon": 0.898,
+      "color": 16710794,
+      "intensity": 0.2,
+      "shadow": false
+    },
+    {
+      "lat": 0.373,
+      "lon": 0.098,
+      "color": 16710794,
+      "intensity": 0.2,
+      "shadow": false
+    },
+    {
+      "lat": 0.489,
+      "lon": 0.572,
+      "color": 16711418,
+      "intensity": 0.15,
+      "shadow": false
+    },
+    {
+      "lat": 0.484,
+      "lon": 0.491,
+      "color": 16711418,
+      "intensity": 0.15,
+      "shadow": false
+    }
+  ]
+}
