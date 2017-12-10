@@ -1,0 +1,21 @@
+{
+  "materials": [
+    "Machine Paint",
+    "Plastic",
+    "Frozen Lake",
+    "Concrete",
+    "Rock",
+    "Mud",
+    "Marble",
+    "Medieval Metal",
+    "Old Metal",
+    "Battered Metal",
+    "Brushed Steel"
+  ],
+  "environments": [
+    "Ocean from Horn",
+    "Late Evening in Park",
+    "In Front of Chapel",
+    "Blue Hour at Pier"
+  ]
+}
