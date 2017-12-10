@@ -250,7 +250,7 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   activeGeometry = new ImplicitGeometry();
 
   const setGeometryFromControls = morphDuration => {
-    const resolution = [22, 44, 60][graphicsControls.meshQuality];
+    const resolution = [25, 50, 60][graphicsControls.meshQuality];
     activeGeometry.render(implicitControls.equation, resolution, morphDuration, implicitControls.oscillate);
   };
 
