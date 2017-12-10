@@ -195,8 +195,8 @@ function enableShadows(enable) {
   render();
 }
 
-const environmentLoader = new EnvironmentLoader('/presets/environments');
-const materialLoader = new MaterialLoader('/presets/materials', renderer.capabilities.getMaxAnisotropy());
+const environmentLoader = new EnvironmentLoader('presets/environments');
+const materialLoader = new MaterialLoader('presets/materials', renderer.capabilities.getMaxAnisotropy());
 
 window.addEventListener('resize', resize);
 resize();
@@ -297,7 +297,7 @@ buildDomTree(
 
 setEnvironment(environmentLoader.default);
 
-request('/presets/index.json').promise
+request('presets/index.json').promise
   .then(names => {
     graphicsControls.addEnvironments(names.environments);
     graphicsControls.addMaterials(names.materials);
