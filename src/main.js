@@ -111,7 +111,7 @@ class ImplicitGeometry {
     let usingHighQualitySurface = false;
 
     this._highQualityGenerate = debounce(() => {
-      const r = Math.round(Math.pow(10, 1/3) * this._resolution);
+      const r = Math.round(Math.pow(14, 1/3) * this._resolution);
       this._highQualitySurface.generate(this._implicitSurfaceAnimator.equation, orbitControls.center, orbitControls.radius, r);
       mesh.geometry = this._highQualitySurface.geometry;
       usingHighQualitySurface = true;
@@ -250,7 +250,7 @@ surfaceControls.add('Implicit', implicitControls.domElement, () => {
   activeGeometry = new ImplicitGeometry();
 
   const setGeometryFromControls = morphDuration => {
-    const resolution = [25, 50, 60][graphicsControls.meshQuality];
+    const resolution = [25, 44, 60][graphicsControls.meshQuality];
     activeGeometry.render(implicitControls.equation, resolution, morphDuration, implicitControls.oscillate);
   };
 
