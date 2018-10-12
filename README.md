@@ -1,7 +1,7 @@
 # Surface Plotter
 Plot parametric and implicit surfaces in WebGL.
 
-Visit the app at http://www.surfaceplotter.com
+Visit the app at https://jaxry.github.io/surface-plotter/
 
 ---
 ## About
